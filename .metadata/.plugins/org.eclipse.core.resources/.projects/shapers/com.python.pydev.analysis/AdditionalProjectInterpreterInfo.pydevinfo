@@ -1,0 +1,50 @@
+-- VERSION_3
+-- START DISKCACHE
+/Users/elad/Documents/shapers/.metadata/.plugins/org.eclipse.core.resources/.projects/shapers/com.python.pydev.analysis/v1_indexcache
+.v1_indexcache
+__init__|0|/Users/elad/Documents/shapers/shapers/__init__.py
+facetime.tests|0|/Users/elad/Documents/shapers/shapers/facetime/tests.py
+wsgi|0|/Users/elad/Documents/shapers/shapers/wsgi.py
+urls|0|/Users/elad/Documents/shapers/shapers/urls.py
+settings|0|/Users/elad/Documents/shapers/shapers/settings.py
+facetime.views|0|/Users/elad/Documents/shapers/shapers/facetime/views.py
+facetime.__init__|0|/Users/elad/Documents/shapers/shapers/facetime/__init__.py
+-- END DISKCACHE
+-- START DICTIONARY
+5
+3=facetime.tests
+2=wsgi
+4=urls
+1=settings
+5=SimpleTest
+-- END DICTIONARY
+-- START TREE 1
+23
+adm|2|ADMIN_MEDIA_PREFIX!11@ADMINS!11@
+all|1|ALLOWED_HOSTS!11@
+app|1|application!19@
+dat|1|DATABASES!11@
+deb|1|DEBUG!11@
+ins|1|INSTALLED_APPS!11@
+lan|1|LANGUAGE_CODE!11@
+log|1|LOGGING!11@
+man|1|MANAGERS!11@
+med|2|MEDIA_ROOT!11@MEDIA_URL!11@
+mid|1|MIDDLEWARE_CLASSES!11@
+per|0|
+pro|1|PROJECT_PATH!11@
+roo|1|ROOT_URLCONF!11@
+sec|1|SECRET_KEY!11@
+sim|1|SimpleTest!25@
+sit|2|SITE_ID!11@SITE_URL_PREFIX!11@
+sta|5|STATIC_URL!11@STATICFILES_FINDERS!11@STATICFILES_DIRS!11@STATIC_ROOT!11@STATIC_FILES_DIR_ABS_PATH!11@
+tem|3|TEMPLATE_DEBUG!11@TEMPLATE_DIRS!11@TEMPLATE_LOADERS!11@
+tim|1|TIME_ZONE!11@
+url|1|urlpatterns!35@
+use|3|USE_L10N!11@USE_TZ!11@USE_I18N!11@
+wsg|1|WSGI_APPLICATION!11@
+-- END TREE
+-- START TREE 2
+1
+tes|1|test_basic_addition!5&26@
+-- END TREE

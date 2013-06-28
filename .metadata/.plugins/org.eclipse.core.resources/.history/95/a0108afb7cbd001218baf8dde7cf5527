@@ -1,0 +1,7 @@
+from django.db import models
+import datetime
+
+# Create your models here.
+class Peron(models.Model):
+    name = models.CharField(max_length=512)
+    created = models.DateTimeField(default=datetime.datetime.now)
