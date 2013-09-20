@@ -6,7 +6,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     # Examples:
-    # url(r'^$', 'shapers.views.home', name='home'),
+    url(r'^$', 'shapers.facetime.views.index'),
     # url(r'^shapers/', include('shapers.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:

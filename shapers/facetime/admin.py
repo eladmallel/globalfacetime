@@ -1,4 +1,4 @@
 from django.contrib import admin
-from facetime.models import Person
+from shapers.facetime.models import Person
 
 admin.site.register(Person)

@@ -4,7 +4,7 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 import os
-PROJECT_PATH = os.path.realpath(os.path.dirname(__file__))
+PROJECT_PATH = os.path.realpath(os.path.abspath(__file__))
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
@@ -63,20 +63,26 @@ MEDIA_URL = ''
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/var/www/example.com/static/"
-STATIC_ROOT = ''
+STATIC_ROOT = 'staticfiles'
 
 # URL prefix for static files.
 # Example: "http://example.com/static/", "http://static.example.com/"
-STATIC_URL = ''
+
 
 # Additional locations of static files
 STATIC_FILES_DIR_ABS_PATH = PROJECT_PATH + '/static/'
+APP_STATIC_FILES_DIR = os.path.realpath(os.path.realpath(os.path.dirname(__file__))) + '/facetime/static/'
 STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     STATIC_FILES_DIR_ABS_PATH,
+    APP_STATIC_FILES_DIR,
+    os.path.join(PROJECT_PATH, 'static'),
 )
+
+SITE_URL_PREFIX = '/'
+STATIC_URL = SITE_URL_PREFIX+'static/'
 
 # List of finder classes that know how to find static files in
 # various locations.
@@ -115,6 +121,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
+    PROJECT_PATH + '/facetime/templates/'
 )
 
 INSTALLED_APPS = (
@@ -128,7 +135,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
-    'facetime'
+    'shapers.facetime'
 )
 
 # A sample logging configuration. The only tangible logging
@@ -166,7 +173,3 @@ SITE_URL_PREFIX = '/'
 # Make sure to use a trailing slash.
 # Examples: "http://foo.com/static/admin/", "/static/admin/".
 ADMIN_MEDIA_PREFIX = SITE_URL_PREFIX + 'static/admin/'
-
-# URL prefix for static files.
-# Example: "http://media.lawrence.com/static/"
-STATIC_URL = SITE_URL_PREFIX+'static/'
