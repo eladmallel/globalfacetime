@@ -24,8 +24,9 @@ ChatWindow = (function() {
   var chatWindowNumber;
   var subscriberDivId;
   var publisherDivId;
+  var closedCallback;
 
-  function ChatWindow(myUser,publisherContainer,subscriberContainer) {
+  function ChatWindow(myUser,publisherContainer,subscriberContainer,onClosedCallback) {
     this.user = myUser;
     self = this;
 
@@ -35,6 +36,8 @@ ChatWindow = (function() {
     // Create a unique identifier
     chatWindowNumber = ChatWindow.chatWindowCount;
     ChatWindow.chatWindowCount++;
+
+    closedCallback = onClosedCallback;
   }
 
   ChatWindow.prototype.connect = function() {
@@ -180,6 +183,10 @@ ChatWindow = (function() {
               session.disconnect();
               session = undefined;
               sessionId = undefined;
+
+              if ( typeof closedCallback != "undefined") {
+                closedCallback(self);
+              }
          }
     }
 

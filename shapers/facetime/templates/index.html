@@ -8,15 +8,32 @@
      <link href="/static/css/style.css" rel="stylesheet" type="text/css">
      
      <script>
-     $(function() {
-        window.cw = new ChatWindow(GlobalFaceTime.user,"#myPublisherDivContainer","#mySubscriberDivContainer");
-        window.cw.connect();
 
+     logoNames = [
+        "ChatSummit",
+        "AnyUni",
+        "ChatGo",
+        "Bridg.er",
+        "HubSphere",
+        "ChatMountain",
+        "Club 84",
+     ]
+
+     function nextChat() {
+        window.cw = new ChatWindow(GlobalFaceTime.user,"#myPublisherDivContainer","#mySubscriberDivContainer",nextChat);
+        window.cw.connect();
+     }
+
+     $(function() {
         $("#next-button").click(function() {
             window.cw.disconnect();
-            window.cw = new ChatWindow(GlobalFaceTime.user,"#myPublisherDivContainer","#mySubscriberDivContainer");
-            window.cw.connect();
         });
+
+        nextChat();
+
+        var chosenLogo = logoNames[Math.floor(Math.random() * logoNames.length)];
+        $("#logo-text").text(chosenLogo);
+
      });
      </script>
 </head>
@@ -24,15 +41,16 @@
 	<div class="main-container">
         <div class="main-content">
             <div class="header">
-                <div class="logo"></div>
+                <div class="logo" id="logo-text"></div>
                 <div class="top-menu"> WASUPPP </div>
             </div>
 
             <div class="videos-section clearfix">
                 <div class="current-video">
                     <div class="video-frame video-main" id="mySubscriberDivContainer">
-                        <div id="mySubscriberDiv"></div>
+                        <img class="loading-spinner" src="/static/images/big_loader.gif">
                         <div class="video-frame video-secondary" id="myPublisherDivContainer">
+                            <img class="loading-spinner" src="/static/images/big_loader.gif">
                         </div>
                     </div>
                 </div>
@@ -44,10 +62,10 @@
             </div>
             
             <div class="chat-information">
-                <div class="connect-button"></div>
-                <div class="next-button" id="next-button">&gt;&gt;<br>Next</div>
+                <div class="connect-button btn btn-info"><br>Connect</div>
+                <div class="next-button btn btn-primary" id="next-button">&gt;&gt;<br>Next</div>
                 <div class="partner-information">
-                    <h4 class="partner-name">JONATHAN LIBOV</h4>
+                    <h4 class="partner-name">HARRY POTTER</h4>
                     <p class="partner-description">Serendipity amorphisms sublime enjoyment croussiount Serendipity amorphisms sublime enjoyment croussiount Serendipity amorphisms sublime enjoyment croussiount Serendipity </p>
                 </div>
             </div>
@@ -56,8 +74,8 @@
 
     <div class="footer">
         <div class="footer-logos-container">
-            <div class="footer-logo">I AM WEF</div>
-            <div class="footer-logo">I AM NOT WEF</div>
+            <div class="footer-logo">I AM A PRETTY LOGO</div>
+            <div class="footer-logo">I AM A PRETTIER LOGO</div>
         </div>
     </div>
 </body>
