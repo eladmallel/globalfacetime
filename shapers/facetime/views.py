@@ -2,21 +2,18 @@ from django import shortcuts
 from django.template import RequestContext
 import json
 from django.http import HttpResponse
-from shapers import settings 
-import OpenTokSDK
+from session_manager import SessionManager
 
-global session_id
-OTSDK = OpenTokSDK.OpenTokSDK(settings.OPENTOK_API_KEY,settings.OPENTOK_API_SECRET)
-sessionProperties = {OpenTokSDK.SessionProperties.p2p_preference: "enabled"}
-session_id = OTSDK.create_session(None, sessionProperties ).session_id
+global session_manager
+session_manager = SessionManager()
 
 def index(request):
 	c = {}
 	return shortcuts.render_to_response('index.html', c, context_instance=RequestContext(request))
 
 def connect(request):
-	global session_id
-	token = OTSDK.generate_token(session_id)
+	global session_manager
+	session_id,token = session_manager.join_or_create_session()
 
 	response_data = {}
 
