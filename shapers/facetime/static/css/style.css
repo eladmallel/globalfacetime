@@ -55,6 +55,7 @@
     top: 10px;
     width: calc(20% + 20px);
     height: calc(20% + 40px);
+    z-index: 700; /* TODO: Find out the right z-index */
 }
 
 .next-video {
