@@ -176,3 +176,7 @@ ADMIN_MEDIA_PREFIX = SITE_URL_PREFIX + 'static/admin/'
 
 OPENTOK_API_KEY = '41805792'
 OPENTOK_API_SECRET = 'f746803b8ce65f45a6d817cdfc39757d3bf0588c'
+
+MONGO_USERNAME = 'globalfacetime'
+MONGO_PASSWORD = 'RHE6uMRpgRysSq'
+MONGO_URL = 'mongodb://ds047438.mongolab.com:47438/globalfacetime'
