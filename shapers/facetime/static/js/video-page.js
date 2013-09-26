@@ -85,7 +85,8 @@ ChatWindow = (function() {
               // Start publishing (and set the size)
               var publisherProperties = {
                 width: $publisherContainer.width(),
-                height: $publisherContainer.height()
+                height: $publisherContainer.height(),
+                rememberDeviceAccess: true,
               };
 
               var publisher = TB.initPublisher(apiKey, publisherDivId, publisherProperties);
