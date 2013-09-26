@@ -53,8 +53,8 @@
     position: absolute;
     right: 10px;
     top: 10px;
-    width: 20%;
-    height: 20%;
+    width: calc(20% + 20px);
+    height: calc(20% + 40px);
 }
 
 .next-video {
