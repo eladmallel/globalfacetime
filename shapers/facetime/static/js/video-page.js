@@ -9,7 +9,7 @@ GlobalFaceTime.user = "" + Math.floor(Math.random()*100000);
 SUBSCRIBER_DIV_NAME_BASE = "subscriberDiv";
 PUBLISHER_DIV_NAME_BASE = "publisherDiv";
 
-MAXIMUM_HEARTBEAT_AGE_BEFORE_DISCONNECT_MILLI = 10000;
+MAXIMUM_HEARTBEAT_AGE_BEFORE_DISCONNECT_MILLI = 20000;
 
 ChatWindow = (function() {
   // To track unique div names
@@ -45,6 +45,7 @@ ChatWindow = (function() {
       method: "GET",
       url: "/connect",
       dataType: "json",
+      data: {"user":self.user},
       success: function(data) {
           console.log("Got data from server: ");
           console.log(data);
