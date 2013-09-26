@@ -173,3 +173,6 @@ SITE_URL_PREFIX = '/'
 # Make sure to use a trailing slash.
 # Examples: "http://foo.com/static/admin/", "/static/admin/".
 ADMIN_MEDIA_PREFIX = SITE_URL_PREFIX + 'static/admin/'
+
+OPENTOK_API_KEY = '41805792'
+OPENTOK_API_SECRET = 'f746803b8ce65f45a6d817cdfc39757d3bf0588c'
