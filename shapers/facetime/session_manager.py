@@ -1,21 +1,23 @@
 from shapers import settings 
 import OpenTokSDK
+from shapers.facetime.mongo_helper import SessionsDao
 
 class SessionManager(object):
     def __init__(self):
         self._OTSDK = OpenTokSDK.OpenTokSDK(settings.OPENTOK_API_KEY,settings.OPENTOK_API_SECRET)
-        self._sessionProperties = {OpenTokSDK.SessionProperties.p2p_preference: "enabled"}
-        
-        self._open_sessions = []
+        self._session_properties = {OpenTokSDK.SessionProperties.p2p_preference: "enabled"}
+
+        self._sessions_dao = SessionsDao()
 
     def join_or_create_session(self):
         print "join_or_create_session"
-        if len(self._open_sessions) == 0:            
-            session_id = self._OTSDK.create_session(None, self._sessionProperties ).session_id
-            self._open_sessions.append(session_id)
+
+        session_id = self._sessions_dao.try_join_session()
+        if not session_id:
             print "creating"
+            session_id = self._OTSDK.create_session(None, self._session_properties).session_id
+            self._sessions_dao.save_session(session_id)
         else:
-            session_id = self._open_sessions.pop(0)
             print "joining"
 
         return session_id,self._create_token_for_session(session_id)
