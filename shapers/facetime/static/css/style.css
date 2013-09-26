@@ -35,6 +35,11 @@
 
 .video-frame {
     border: solid 10px #e96;
+    position: relative;
+}
+
+.video-frame object {
+    position: absolute;
 }
 
 .video-main {

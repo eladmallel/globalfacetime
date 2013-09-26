@@ -2,142 +2,50 @@
 <head>
 	<script src='/static/js/TB.min.js'></script>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+     <script src="/static/js/video-page.js"></script>
+
+     <link href="/static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+     <link href="/static/css/style.css" rel="stylesheet" type="text/css">
 </head>
 <body>
-	<h1>hello there</h1>
-	<div id="myPublisherDiv"></div>
-	<div id="mySubscriberDiv"></div>
-        <script type="text/javascript">
-          // Initialize API key, session, and token...
-          // Think of a session as a room, and a token as the key to get in to the room
-          // Sessions and tokens are generated on your server and passed down to the client
-          var apiKey = "41805792";
+	<div class="main-container">
+        <div class="main-content">
+            <div class="header">
+                <div class="logo"></div>
+                <div class="top-menu"> WASUPPP </div>
+            </div>
 
-          var globalFaceTime = window.globalFacetime = {};
-          globalFaceTime.user = "" + Math.floor(Math.random()*100000);
+            <div class="videos-section clearfix">
+                <div class="current-video">
+                    <div class="video-frame video-main" id="mySubscriberDivContainer">
+                        <div id="mySubscriberDiv"></div>
+                        <div class="video-frame video-secondary" id="myPublisherDivContainer">
+                        </div>
+                    </div>
+                </div>
 
-          $.ajax({
-          	method: "GET",
-          	url: "/connect",
-          	dataType: "json",
-          	success: function(data) {
-          		console.log("Got data from server: ");
-          		console.log(data);
+                <div class="next-video">
+                    <div class="video-frame video-next">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-information">
+                <div class="connect-button"></div>
+                <div class="next-button">&gt;&gt;<br>Next</div>
+                <div class="partner-information">
+                    <h4 class="partner-name">JONATHAN LIBOV</h4>
+                    <p class="partner-description">Serendipity amorphisms sublime enjoyment croussiount Serendipity amorphisms sublime enjoyment croussiount Serendipity amorphisms sublime enjoyment croussiount Serendipity </p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-          		var session = TB.initSession(data.sessionId);
-                    globalFaceTime.sessionId = data.sessionId;
-                    globalFaceTime.session = session;
-
-          		console.log("session");
-          		console.log(session);
-
-				function connectToStreams(streams) {
-					for (var i = 0; i < streams.length; i++) {
-						var stream = streams[i];
-						if (stream.connection.connectionId != session.connection.connectionId) {
-							session.subscribe(stream, "mySubscriberDiv");							
-						}
-					}
-				}
-
-				function sessionConnectedHandler(event) {
-					console.log("in sessionConnectedHandler");
-
-          			var publisher = TB.initPublisher(apiKey, 'myPublisherDiv');
-          			session.publish(publisher);
-
-          			console.log("published");
-
-          			connectToStreams(event.streams);
-          		}
-
-          		function streamCreatedHandler(event) {
-          			connectToStreams(event.streams);
-          		}
-
-                    function streamDestroyedHandler(event) {
-                         console.log("streamDestroyedHandler");
-                         console.log(event);
-                         processChatDisconnected();
-                    }
-
-                    function sessionDisconnectedHandler(event) {
-                         console.log("sessionDisconnectedHandler");
-                         console.log(event);
-                         processChatDisconnected();
-                    }
-
-                    function connectionDestroyedHandler(event) {
-                         console.log("sessionDestroyedHandler");
-                         console.log(event);
-                         processChatDisconnected();
-                    }
-
-          		session.addEventListener('sessionConnected', sessionConnectedHandler);
-          		session.addEventListener('streamCreated', streamCreatedHandler);
-
-                    session.addEventListener('streamDestroyed', streamDestroyedHandler);
-                    session.addEventListener('sessionDisconnected', sessionDisconnectedHandler);
-                    session.addEventListener('connectionDestroyed', connectionDestroyedHandler);
-
-          		session.connect(apiKey, data.token);
-
-          		console.log("connecting");          		
-          	},
-          	error: function(error) {
-
-          	} 
-          });
-
-          function processChatDisconnected() {
-               if (typeof globalFaceTime.session != "undefined") {
-                    console.log("Disconnecting from chat...");
-                    globalFaceTime.session.disconnect();
-                    globalFaceTime.session = undefined;
-                    globalFaceTime.sessionId = undefined;
-               }
-          }
-
-          MAXIMUM_HEARTBEAT_AGE_BEFORE_DISCONNECT_MILLI = 10000;
-
-          function processHeartbeats(now,heartbeats) {
-               var nowDate = new Date(now);
-
-               console.log("HEARTBEAT: Processing ");
-               console.log(heartbeats);
-
-               for (var user in heartbeats) {
-                    var lastHeartbeat = new Date(heartbeats[user]);
-
-                    var staleness = nowDate - lastHeartbeat;
-                    console.log("HEARTBEAT: Staleness of " + user + " is " + staleness);
-
-                    if (staleness >= MAXIMUM_HEARTBEAT_AGE_BEFORE_DISCONNECT_MILLI) {
-                         console.log("Chat is stale. Disconnect.");
-                         processChatDisconnected();
-                    }
-               }
-          }
-
-          (function(){
-               if (typeof globalFaceTime.sessionId != 'undefined') {
-                    $.ajax({
-                         method: "GET",
-                         dataType: "JSON",
-                         url: "/heartbeat",
-                         data: {
-                              sessionId:globalFaceTime.sessionId,
-                              user:globalFaceTime.user
-                         },
-                         success: function(data) {
-                              processHeartbeats(data.now,data.heartbeats);
-                         }
-                    });
-               }
-
-              setTimeout(arguments.callee, 1000);
-          })();      
-          
-        </script>
+    <div class="footer">
+        <div class="footer-logos-container">
+            <div class="footer-logo">I AM WEF</div>
+            <div class="footer-logo">I AM NOT WEF</div>
+        </div>
+    </div>
 </body>
 </html>
