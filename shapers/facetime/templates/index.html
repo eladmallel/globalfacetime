@@ -1,27 +1,65 @@
 <html>
 <head>
 	<script src='https://swww.tokbox.com/v1.1/js/TB.min.js'></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 </head>
 <body>
 	<h1>hello there</h1>
 	<div id="myPublisherDiv"></div>
+	<div id="mySubscriberDiv"></div>
         <script type="text/javascript">
           // Initialize API key, session, and token...
           // Think of a session as a room, and a token as the key to get in to the room
           // Sessions and tokens are generated on your server and passed down to the client
           var apiKey = "41805792";
-          var sessionId = "1_MX40MTgwNTc5Mn4xMjcuMC4wLjF-RnJpIFNlcCAyMCAwMTozOTozMiBQRFQgMjAxM34wLjA5MzkyNTI0fg";
-          var token = "T1==cGFydG5lcl9pZD00MTgwNTc5MiZzZGtfdmVyc2lvbj10YnJ1YnktdGJyYi12MC45MS4yMDExLTAyLTE3JnNpZz00YzlmNDZiMGE2OWFjMTY5MjcyMjJiNDI2ZWFlNzdlY2Q0OTRmNDcwOnJvbGU9cHVibGlzaGVyJnNlc3Npb25faWQ9MV9NWDQwTVRnd05UYzVNbjR4TWpjdU1DNHdMakYtUm5KcElGTmxjQ0F5TUNBd01Ub3pPVG96TWlCUVJGUWdNakF4TTM0d0xqQTVNemt5TlRJMGZnJmNyZWF0ZV90aW1lPTEzNzk2NjYzNzImbm9uY2U9MC44MDM3MjY1NzE1NzIxOTg3JmV4cGlyZV90aW1lPTEzNzk3NTI3NzImY29ubmVjdGlvbl9kYXRhPQ==";
 
-          // Initialize session, set up event listeners, and connect
-          var session = TB.initSession(sessionId);
-          session.addEventListener('sessionConnected', sessionConnectedHandler);
-          session.connect(apiKey, token);
+          $.ajax({
+          	method: "GET",
+          	url: "/connect",
+          	dataType: "json",
+          	success: function(data) {
+          		console.log("Got data from server: ");
+          		console.log(data);
+
+          		var session = TB.initSession(data.sessionId);
+          		console.log("session");
+          		console.log(session);
+
+				function connectToStreams(streams) {
+					for (var i = 0; i < streams.length; i++) {
+						var stream = streams[i];
+						if (stream.connection.connectionId != session.connection.connectionId) {
+							session.subscribe(stream, "mySubscriberDiv");							
+						}
+					}
+				}
+
+				function sessionConnectedHandler(event) {
+					console.log("in sessionConnectedHandler");
+
+          			var publisher = TB.initPublisher(apiKey, 'myPublisherDiv');
+          			session.publish(publisher);
+
+          			console.log("published");
+
+          			connectToStreams(event.streams);
+          		}
+
+          		function streamCreatedHandler(event) {
+          			connectToStreams(event.streams);
+          		}
+
+          		session.addEventListener('sessionConnected', sessionConnectedHandler);
+          		session.addEventListener('streamCreated', streamCreatedHandler);
+          		session.connect(apiKey, data.token);
+
+          		console.log("connecting");          		
+          	},
+          	error: function(error) {
+
+          	} 
+          });          
           
-          function sessionConnectedHandler(event) {
-            var publisher = TB.initPublisher(apiKey, 'myPublisherDiv');
-            session.publish(publisher);
-          }
         </script>
 </body>
 </html>
