@@ -3,6 +3,7 @@ from django.template import RequestContext
 import json
 from django.http import HttpResponse
 from session_manager import SessionManager
+from django.core.serializers.json import DjangoJSONEncoder
 
 global session_manager
 session_manager = SessionManager()
@@ -24,3 +25,17 @@ def connect(request):
 	response_data['token'] = token
 
 	return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+def heartbeat(request):
+	global session_manager
+	session_id = request.GET.get("sessionId")
+	user = request.GET.get("user")
+
+	now,heartbeats = session_manager.heartbeat(session_id,user)
+
+	return HttpResponse(
+		json.dumps(
+			{'now':now,'heartbeats':heartbeats},
+			cls=DjangoJSONEncoder
+		),
+		content_type="application/json")

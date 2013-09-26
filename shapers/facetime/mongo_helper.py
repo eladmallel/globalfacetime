@@ -17,8 +17,10 @@ class SessionsDao(object):
 		return list(self._sessions.find())
 
 	def try_join_session(self):
+		staleness_threshold = datetime.datetime.utcnow() - datetime.timedelta(milliseconds=settings.CHAT_MAXIMUM_STALENESS_ALLOWED_MILLI)
+
 		session = self._sessions.find_and_modify(
-			query={'peer_count':1, 'looking_to_merge': False},
+			query={'peer_count':1, 'looking_to_merge': False, 'latest_heartbeat': {'$gte': staleness_threshold}},
 			update={'$inc':{'peer_count':1}},
 			upsert=False,
 			new=False)
@@ -32,7 +34,18 @@ class SessionsDao(object):
 			'peer_count': 1,
 			'session_id': session_id,
 			'looking_to_merge': False,
-			'date': datetime.datetime.utcnow()
+			'date': datetime.datetime.utcnow(),
+			'heartbeats': {},
+			'latest_heartbeat': datetime.datetime.utcnow(),
 		}
 		self._sessions.insert(session)
 
+	def heartbeat(self,session_id,user):
+		now = datetime.datetime.utcnow()
+		session = self._sessions.find_and_modify(
+			query={'session_id':session_id},
+			update={'$set':{'heartbeats.'+user:now,'latest_heartbeat':now}},
+			upsert=False,
+			new=True)
+
+		return now,session["heartbeats"]

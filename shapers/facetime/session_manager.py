@@ -25,3 +25,7 @@ class SessionManager(object):
     def _create_token_for_session(self,session_id):
         print "_create_token_for_session"
         return self._OTSDK.generate_token(session_id)
+
+    def heartbeat(self,session_id,user):
+        print "hearbeat: %s - %s"%(user,session_id)
+        return self._sessions_dao.heartbeat(session_id,user)
