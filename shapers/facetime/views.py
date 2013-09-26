@@ -39,3 +39,6 @@ def heartbeat(request):
 			cls=DjangoJSONEncoder
 		),
 		content_type="application/json")
+
+def video(request):
+	return shortcuts.render_to_response('video.html',{},context_instance=RequestContext(request))

@@ -9,6 +9,7 @@ urlpatterns = patterns('',
     url(r'^$', 'shapers.facetime.views.index'),
     url(r'^connect$', 'shapers.facetime.views.connect'),
     url(r'^heartbeat', 'shapers.facetime.views.heartbeat'),
+    url(r'^video$', 'shapers.facetime.views.video'),
     # url(r'^shapers/', include('shapers.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
