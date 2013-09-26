@@ -11,6 +11,12 @@
      $(function() {
         window.cw = new ChatWindow(GlobalFaceTime.user,"#myPublisherDivContainer","#mySubscriberDivContainer");
         window.cw.connect();
+
+        $("#next-button").click(function() {
+            window.cw.disconnect();
+            window.cw = new ChatWindow(GlobalFaceTime.user,"#myPublisherDivContainer","#mySubscriberDivContainer");
+            window.cw.connect();
+        });
      });
      </script>
 </head>
@@ -39,7 +45,7 @@
             
             <div class="chat-information">
                 <div class="connect-button"></div>
-                <div class="next-button">&gt;&gt;<br>Next</div>
+                <div class="next-button" id="next-button">&gt;&gt;<br>Next</div>
                 <div class="partner-information">
                     <h4 class="partner-name">JONATHAN LIBOV</h4>
                     <p class="partner-description">Serendipity amorphisms sublime enjoyment croussiount Serendipity amorphisms sublime enjoyment croussiount Serendipity amorphisms sublime enjoyment croussiount Serendipity </p>

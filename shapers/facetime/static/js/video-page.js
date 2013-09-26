@@ -38,7 +38,6 @@ ChatWindow = (function() {
   }
 
   ChatWindow.prototype.connect = function() {
-    console.log(self.user);
     $.ajax({
       method: "GET",
       url: "/connect",
