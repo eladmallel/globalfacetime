@@ -3,141 +3,186 @@
 // Sessions and tokens are generated on your server and passed down to the client
 var apiKey = "41805792";
 
-var globalFaceTime = window.globalFacetime = {};
-globalFaceTime.user = "" + Math.floor(Math.random()*100000);
+GlobalFaceTime = {}
+GlobalFaceTime.user = "" + Math.floor(Math.random()*100000);
 
-$.ajax({
-  method: "GET",
-  url: "/connect",
-  dataType: "json",
-  success: function(data) {
-      console.log("Got data from server: ");
-      console.log(data);
-
-      var session = TB.initSession(data.sessionId);
-          globalFaceTime.sessionId = data.sessionId;
-          globalFaceTime.session = session;
-
-      console.log("session");
-      console.log(session);
-
-      function connectToStreams(streams) {
-          for (var i = 0; i < streams.length; i++) {
-              var stream = streams[i];
-              if (stream.connection.connectionId != session.connection.connectionId) {
-                  var subscriber = session.subscribe(stream, "mySubscriberDiv"); 
-                  var subscriberFlashElement = document.getElementById(subscriber.id);
-
-                  subscriberFlashElement.width = $("#mySubscriberDivContainer").width();                         
-                  subscriberFlashElement.height = $("#mySubscriberDivContainer").height();
-              }
-          }
-      }
-
-      function sessionConnectedHandler(event) {
-          console.log("in sessionConnectedHandler");
-
-          var publisherElement = document.createElement("div");
-          publisherElement.setAttribute("id","publisherDiv");
-          $("#myPublisherDivContainer")[0].appendChild(publisherElement);
-
-          var publisherProperties = {
-            width: $("#myPublisherDivContainer").width(),
-            height: $("#myPublisherDivContainer").height()
-          };
-
-          var publisher = TB.initPublisher(apiKey, 'publisherDiv',publisherProperties);
-          session.publish(publisher);
-
-          console.log("published");
-
-          connectToStreams(event.streams);
-      }
-
-      function streamCreatedHandler(event) {
-          connectToStreams(event.streams);
-      }
-
-          function streamDestroyedHandler(event) {
-               console.log("streamDestroyedHandler");
-               console.log(event);
-               processChatDisconnected();
-          }
-
-          function sessionDisconnectedHandler(event) {
-               console.log("sessionDisconnectedHandler");
-               console.log(event);
-               processChatDisconnected();
-          }
-
-          function connectionDestroyedHandler(event) {
-               console.log("sessionDestroyedHandler");
-               console.log(event);
-               processChatDisconnected();
-          }
-
-      session.addEventListener('sessionConnected', sessionConnectedHandler);
-      session.addEventListener('streamCreated', streamCreatedHandler);
-
-          session.addEventListener('streamDestroyed', streamDestroyedHandler);
-          session.addEventListener('sessionDisconnected', sessionDisconnectedHandler);
-          session.addEventListener('connectionDestroyed', connectionDestroyedHandler);
-
-      session.connect(apiKey, data.token);
-
-      console.log("connecting");                  
-  },
-  error: function(error) {
-
-  } 
-});
-
-function processChatDisconnected() {
-     if (typeof globalFaceTime.session != "undefined") {
-          console.log("Disconnecting from chat...");
-          globalFaceTime.session.disconnect();
-          globalFaceTime.session = undefined;
-          globalFaceTime.sessionId = undefined;
-     }
-}
+SUBSCRIBER_DIV_NAME_BASE = "subscriberDiv";
+PUBLISHER_DIV_NAME_BASE = "publisherDiv";
 
 MAXIMUM_HEARTBEAT_AGE_BEFORE_DISCONNECT_MILLI = 10000;
 
-function processHeartbeats(now,heartbeats) {
-     var nowDate = new Date(now);
+ChatWindow = (function() {
+  // To track unique div names
+  ChatWindow.chatWindowCount = 0;
 
-     //console.log("HEARTBEAT: Processing ");
-     //console.log(heartbeats);
+  var sessionId;
+  var session;
+  var user;
+  var self;
+  var $publisherContainer;
+  var $subscriberContainer;
+  var chatWindowNumber;
+  var subscriberDivId;
+  var publisherDivId;
 
-     for (var user in heartbeats) {
-          var lastHeartbeat = new Date(heartbeats[user]);
+  function ChatWindow(myUser,publisherContainer,subscriberContainer) {
+    this.user = myUser;
+    self = this;
 
-          var staleness = nowDate - lastHeartbeat;
-          //console.log("HEARTBEAT: Staleness of " + user + " is " + staleness);
+    $publisherContainer = $(publisherContainer);
+    $subscriberContainer = $(subscriberContainer);
 
-          if (staleness >= MAXIMUM_HEARTBEAT_AGE_BEFORE_DISCONNECT_MILLI) {
-               console.log("Chat is stale ("+staleness+"). Disconnect.");
-               processChatDisconnected();
+    // Create a unique identifier
+    chatWindowNumber = ChatWindow.chatWindowCount;
+    ChatWindow.chatWindowCount++;
+  }
+
+  ChatWindow.prototype.connect = function() {
+    console.log(self.user);
+    $.ajax({
+      method: "GET",
+      url: "/connect",
+      dataType: "json",
+      success: function(data) {
+          console.log("Got data from server: ");
+          console.log(data);
+
+          session = TB.initSession(data.sessionId);
+          sessionId = data.sessionId;
+
+          console.log("session");
+          console.log(session);
+
+          function connectToStreams(streams) {
+              for (var i = 0; i < streams.length; i++) {
+                  var stream = streams[i];
+                  if (stream.connection.connectionId != session.connection.connectionId) {
+
+                    // Create an element to be replaced by the flash
+                    subscriberDivId = SUBSCRIBER_DIV_NAME_BASE+"_"+chatWindowNumber;
+                    var subscriberElement = document.createElement("div");
+                    subscriberElement.setAttribute("id",subscriberDivId);
+                    $subscriberContainer[0].appendChild(subscriberElement);
+
+                    // Subscribe to the remote stream
+                    var subscriber = session.subscribe(stream, subscriberDivId); 
+                    var subscriberFlashElement = document.getElementById(subscriber.id);
+
+                    subscriberFlashElement.width = $subscriberContainer.width();                         
+                    subscriberFlashElement.height = $subscriberContainer.height();
+                  }
+              }
           }
-     }
-}
 
-(function(){
-     if (typeof globalFaceTime.sessionId != 'undefined') {
-          $.ajax({
-               method: "GET",
-               dataType: "JSON",
-               url: "/heartbeat",
-               data: {
-                    sessionId:globalFaceTime.sessionId,
-                    user:globalFaceTime.user
-               },
-               success: function(data) {
-                    processHeartbeats(data.now,data.heartbeats);
-               }
-          });
-     }
+          function sessionConnectedHandler(event) {
+              console.log("in sessionConnectedHandler");
 
-    setTimeout(arguments.callee, 1000);
-})();      
+              // Create an element to be replaced by the flash
+              publisherDivId = PUBLISHER_DIV_NAME_BASE+"_"+chatWindowNumber;
+              var publisherElement = document.createElement("div");
+              publisherElement.setAttribute("id",publisherDivId);
+              $publisherContainer[0].appendChild(publisherElement);
+
+              // Start publishing (and set the size)
+              var publisherProperties = {
+                width: $publisherContainer.width(),
+                height: $publisherContainer.height()
+              };
+
+              var publisher = TB.initPublisher(apiKey, publisherDivId, publisherProperties);
+              session.publish(publisher);
+
+              console.log("published");
+
+              connectToStreams(event.streams);
+          }
+
+          function streamCreatedHandler(event) {
+              connectToStreams(event.streams);
+          }
+
+              function streamDestroyedHandler(event) {
+                   console.log("streamDestroyedHandler");
+                   console.log(event);
+                   self.disconnect();
+              }
+
+              function sessionDisconnectedHandler(event) {
+                   console.log("sessionDisconnectedHandler");
+                   console.log(event);
+                   self.disconnect();
+              }
+
+              function connectionDestroyedHandler(event) {
+                   console.log("sessionDestroyedHandler");
+                   console.log(event);
+                   self.disconnect();
+              }
+
+          session.addEventListener('sessionConnected', sessionConnectedHandler);
+          session.addEventListener('streamCreated', streamCreatedHandler);
+
+              session.addEventListener('streamDestroyed', streamDestroyedHandler);
+              session.addEventListener('sessionDisconnected', sessionDisconnectedHandler);
+              session.addEventListener('connectionDestroyed', connectionDestroyedHandler);
+
+          session.connect(apiKey, data.token);
+
+          console.log("connecting");                  
+      },
+      error: function(error) {
+
+      } 
+    });
+
+    function processHeartbeats(now,heartbeats) {
+         var nowDate = new Date(now);
+
+         //console.log("HEARTBEAT: Processing ");
+         //console.log(heartbeats);
+
+         for (var currUser in heartbeats) {
+              var lastHeartbeat = new Date(heartbeats[currUser]);
+
+              var staleness = nowDate - lastHeartbeat;
+              //console.log("HEARTBEAT: Staleness of " + currUser + " is " + staleness);
+
+              if (staleness >= MAXIMUM_HEARTBEAT_AGE_BEFORE_DISCONNECT_MILLI) {
+                   console.log("Chat is stale ("+staleness+"). Disconnect.");
+                   self.disconnect();
+              }
+         }
+    }
+
+    (function(){
+         if (typeof sessionId != 'undefined') {
+              $.ajax({
+                   method: "GET",
+                   dataType: "JSON",
+                   url: "/heartbeat",
+                   data: {
+                        sessionId:sessionId,
+                        user:self.user
+                   },
+                   success: function(data) {
+                        processHeartbeats(data.now,data.heartbeats);
+                   }
+              });
+         }
+
+        setTimeout(arguments.callee, 1000);
+    })();
+  }
+
+  ChatWindow.prototype.disconnect = function() {
+         if (typeof session != "undefined") {
+              console.log("Disconnecting from chat...");
+              session.disconnect();
+              session = undefined;
+              sessionId = undefined;
+         }
+    }
+
+  return ChatWindow;
+})();
           
