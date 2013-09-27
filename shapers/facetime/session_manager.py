@@ -29,3 +29,6 @@ class SessionManager(object):
     def heartbeat(self,session_id,user):
         print "hearbeat: %s - %s"%(user,session_id)
         return self._sessions_dao.heartbeat(session_id,user)
+
+    def get_alive_sessions(self):
+        return self._sessions_dao.get_alive_sessions()        

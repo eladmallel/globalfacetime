@@ -16,6 +16,10 @@ class SessionsDao(object):
 	def all_sessions(self):
 		return list(self._sessions.find())
 
+	def get_alive_sessions(self):
+		staleness_threshold = datetime.datetime.utcnow() - datetime.timedelta(milliseconds=settings.CHAT_MAXIMUM_STALENESS_ALLOWED_MILLI)
+		return list(self._sessions.find({'latest_heartbeat': {'$gte': staleness_threshold}}))
+
 	def try_join_session(self):
 		staleness_threshold = datetime.datetime.utcnow() - datetime.timedelta(milliseconds=settings.CHAT_MAXIMUM_STALENESS_ALLOWED_MILLI)
 

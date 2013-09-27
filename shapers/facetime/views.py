@@ -42,3 +42,10 @@ def heartbeat(request):
 
 def video(request):
 	return shortcuts.render_to_response('video.html',{},context_instance=RequestContext(request))
+
+def get_alive_sessions(request):
+	sessions = session_manager.get_alive_sessions()
+	for s in sessions:
+		del s["_id"] # ObjectIds don't serialize
+		
+	return HttpResponse(json.dumps(sessions,cls=DjangoJSONEncoder), content_type="application/json")

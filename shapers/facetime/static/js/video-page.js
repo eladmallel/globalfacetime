@@ -67,10 +67,17 @@ ChatWindow = (function() {
                     subscriberElement.setAttribute("id",subscriberDivId);
                     $subscriberContainer[0].appendChild(subscriberElement);
 
-                    // Subscribe to the remote stream
-                    var subscriber = session.subscribe(stream, subscriberDivId); 
-                    var subscriberFlashElement = document.getElementById(subscriber.id);
+                    // RTC size change
+                    var subscriberProperties = {
+                      width: $subscriberContainer.width(),
+                      height: $subscriberContainer.height()
+                    };
 
+                    // Subscribe to the remote stream
+                    var subscriber = session.subscribe(stream, subscriberDivId, subscriberProperties); 
+
+                    // Flash size change
+                    var subscriberFlashElement = document.getElementById(subscriber.id);
                     subscriberFlashElement.width = $subscriberContainer.width();                         
                     subscriberFlashElement.height = $subscriberContainer.height();
                   }
