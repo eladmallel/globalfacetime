@@ -76,6 +76,9 @@ ChatWindow = (function() {
                     // Subscribe to the remote stream
                     var subscriber = session.subscribe(stream, subscriberDivId, subscriberProperties); 
 
+                    // We're no longer looking for a partner (for UI purposes)
+                    $subscriberContainer.removeClass("searching-for-partner");
+
                     // Flash size change
                     var subscriberFlashElement = document.getElementById(subscriber.id);
                     subscriberFlashElement.width = $subscriberContainer.width();                         
@@ -105,6 +108,9 @@ ChatWindow = (function() {
 
               console.log("published");
 
+              // Now we wait for a partner - mark our subscriber div as waiting for partner (for UI purposes)
+              $subscriberContainer.addClass("searching-for-partner");
+
               connectToStreams(event.streams);
           }
 
@@ -112,30 +118,30 @@ ChatWindow = (function() {
               connectToStreams(event.streams);
           }
 
-              function streamDestroyedHandler(event) {
-                   console.log("streamDestroyedHandler");
-                   console.log(event);
-                   self.disconnect();
-              }
+          function streamDestroyedHandler(event) {
+               console.log("streamDestroyedHandler");
+               console.log(event);
+               self.disconnect();
+          }
 
-              function sessionDisconnectedHandler(event) {
-                   console.log("sessionDisconnectedHandler");
-                   console.log(event);
-                   self.disconnect();
-              }
+          function sessionDisconnectedHandler(event) {
+               console.log("sessionDisconnectedHandler");
+               console.log(event);
+               self.disconnect();
+          }
 
-              function connectionDestroyedHandler(event) {
-                   console.log("sessionDestroyedHandler");
-                   console.log(event);
-                   self.disconnect();
-              }
+          function connectionDestroyedHandler(event) {
+               console.log("sessionDestroyedHandler");
+               console.log(event);
+               self.disconnect();
+          }
 
           session.addEventListener('sessionConnected', sessionConnectedHandler);
           session.addEventListener('streamCreated', streamCreatedHandler);
 
-              session.addEventListener('streamDestroyed', streamDestroyedHandler);
-              session.addEventListener('sessionDisconnected', sessionDisconnectedHandler);
-              session.addEventListener('connectionDestroyed', connectionDestroyedHandler);
+          session.addEventListener('streamDestroyed', streamDestroyedHandler);
+          session.addEventListener('sessionDisconnected', sessionDisconnectedHandler);
+          session.addEventListener('connectionDestroyed', connectionDestroyedHandler);
 
           session.connect(apiKey, data.token);
 
@@ -191,6 +197,9 @@ ChatWindow = (function() {
               session.disconnect();
               session = undefined;
               sessionId = undefined;
+
+              // We're disconnected, so we aren't looking for a partner (for UI purposes)
+              $subscriberContainer.removeClass("searching-for-partner");
 
               if ( typeof closedCallback != "undefined") {
                 closedCallback(self);

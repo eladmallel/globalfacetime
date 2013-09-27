@@ -144,3 +144,19 @@
     margin-right: 20px;
     margin-left: 20px;
 }
+
+/* Main loading spinner states (loading an searching) */
+
+/* Standard state is spinner, but show a search icon when searching for partner */
+.loading-spinner.search {
+    display: none;
+}
+
+.searching-for-partner .loading-spinner.spinner {
+    display: none;
+}
+
+.searching-for-partner .loading-spinner.search {
+    display: block;
+}
+
