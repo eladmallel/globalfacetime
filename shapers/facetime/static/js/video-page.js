@@ -11,6 +11,102 @@ PUBLISHER_DIV_NAME_BASE = "publisherDiv";
 
 MAXIMUM_HEARTBEAT_AGE_BEFORE_DISCONNECT_MILLI = 20000;
 
+TEMPORARY_PUBLISHER_CONTAINER_ID = "temporaryPublisherContainer";
+
+ChatPublisher = (function() {
+  var session;
+  var publisher;
+  var $defaultPublisherContainer;
+  var $currentPublisherContainer;
+  var publisherId;
+
+  function ChatPublisher(thePublisherId) {
+    publisherId = thePublisherId;
+    // Create a default publisher container
+    $defaultPublisherContainer = $(document.createElement("div"));
+    $defaultPublisherContainer.attr("id",TEMPORARY_PUBLISHER_CONTAINER_ID);
+    $defaultPublisherContainer.css("display","none");
+    $defaultPublisherContainer.appendTo($("body"));
+
+    // And set it as the current container
+    $currentPublisherContainer = $defaultPublisherContainer;
+
+    // Create an element to be replaced by the publisher
+    var publisherElement = document.createElement("div");
+    publisherElement.setAttribute("id",publisherId);
+    $currentPublisherContainer[0].appendChild(publisherElement);
+
+    // Start publishing
+    var publisherProperties = {
+      rememberDeviceAccess: true,
+    };
+
+    publisher = TB.initPublisher(apiKey, publisherId, publisherProperties);
+  }
+
+  ChatPublisher.prototype._switchContainer = function(newContainer) {
+    console.log("CP: Switching container to "+newContainer);
+    var $newPublisherContainer = $(newContainer);
+    $currentPublisherContainer.children().appendTo($newPublisherContainer);
+    $currentPublisherContainer = $newPublisherContainer;
+
+    this._unpauseAndResize();
+  }
+
+  ChatPublisher.prototype._unpauseAndResize = function() {
+    console.log("CP: Unpause and Resize");
+
+    // Unpause the video
+    var videos = $currentPublisherContainer.find("video");
+    for (var i = 0; i < videos.length; i++) {
+      videos[i].play();
+    }
+
+    // Resize my publisher to fit
+    var $publisherElement = $(document.getElementById(publisher.id));
+    $publisherElement.width($currentPublisherContainer.width());                         
+    $publisherElement.height($currentPublisherContainer.height());
+  }
+
+  ChatPublisher.prototype.publishTo = function(newSession,newContainer) {
+    console.log("CP: Publishing - new container is "+newContainer);
+    // Keep my event listener on the old session, if we had one - so when *it* closes, it doesn't close my publisher
+
+    // And now for the new session
+    session = newSession;
+
+    function sessionDisconnectedHandler(event) {
+      event.preventDefault(); // So it won't destroy my publisher
+      this._switchContainer($defaultPublisherContainer); // Switch to the default container
+    }
+
+    function streamCreatedHandler(event) {
+      console.log("CP: stream created");
+      this._unpauseAndResize();
+    }
+
+    function streamPropertyChangedHandler(event) {
+      console.log("CP: stream property changed");
+      this._unpauseAndResize();
+    }
+
+    // To make sure my publisher won't get destroyed
+    session.addEventListener('sessionDisconnected', sessionDisconnectedHandler,this);
+
+    // To resize my publisher when it gets published
+    session.addEventListener('streamCreated', streamCreatedHandler,this);
+    session.addEventListener('streamPropertyChanged', streamPropertyChangedHandler,this);
+
+    // Finally - publish
+    session.publish(publisher);
+
+    // And put our publisher in the container
+    this._switchContainer(newContainer);
+  }
+
+  return ChatPublisher;
+})();
+
 ChatWindow = (function() {
   // To track unique div names
   ChatWindow.chatWindowCount = 0;
@@ -19,25 +115,33 @@ ChatWindow = (function() {
   var session;
   var user;
   var self;
-  var $publisherContainer;
+  var $publisherContainer;  
   var $subscriberContainer;
+  var $parentContainer;
   var chatWindowNumber;
   var subscriberDivId;
   var publisherDivId;
   var closedCallback;
+  var chatPublisherObj;
 
-  function ChatWindow(myUser,publisherContainer,subscriberContainer,onClosedCallback) {
+  function ChatWindow(myUser,chatPublisher,publisherContainer,subscriberContainer,parentContainer,onClosedCallback) {
     this.user = myUser;
     self = this;
 
     $publisherContainer = $(publisherContainer);
     $subscriberContainer = $(subscriberContainer);
+    $parentContainer = $(parentContainer);
+    chatPublisherObj = chatPublisher;
 
     // Create a unique identifier
     chatWindowNumber = ChatWindow.chatWindowCount;
     ChatWindow.chatWindowCount++;
 
     closedCallback = onClosedCallback;
+
+    // We aren't connected yet, so we can't be searching for a partner
+    console.log("Connecting: Not looking for partner");
+    $parentContainer.removeClass("searching-for-partner");
   }
 
   ChatWindow.prototype.connect = function() {
@@ -77,7 +181,8 @@ ChatWindow = (function() {
                     var subscriber = session.subscribe(stream, subscriberDivId, subscriberProperties); 
 
                     // We're no longer looking for a partner (for UI purposes)
-                    $subscriberContainer.removeClass("searching-for-partner");
+                    console.log("Found partner: Not looking for partner");
+                    $parentContainer.removeClass("searching-for-partner");
 
                     // Flash size change
                     var subscriberFlashElement = document.getElementById(subscriber.id);
@@ -90,26 +195,13 @@ ChatWindow = (function() {
           function sessionConnectedHandler(event) {
               console.log("in sessionConnectedHandler");
 
-              // Create an element to be replaced by the flash
-              publisherDivId = PUBLISHER_DIV_NAME_BASE+"_"+chatWindowNumber;
-              var publisherElement = document.createElement("div");
-              publisherElement.setAttribute("id",publisherDivId);
-              $publisherContainer[0].appendChild(publisherElement);
-
-              // Start publishing (and set the size)
-              var publisherProperties = {
-                width: $publisherContainer.width(),
-                height: $publisherContainer.height(),
-                rememberDeviceAccess: true,
-              };
-
-              var publisher = TB.initPublisher(apiKey, publisherDivId, publisherProperties);
-              session.publish(publisher);
-
+              // Publish
+              chatPublisherObj.publishTo(session,$publisherContainer);
               console.log("published");
 
               // Now we wait for a partner - mark our subscriber div as waiting for partner (for UI purposes)
-              $subscriberContainer.addClass("searching-for-partner");
+              console.log("Connected: Looking for partner");
+              $parentContainer.addClass("searching-for-partner");
 
               connectToStreams(event.streams);
           }
@@ -127,7 +219,7 @@ ChatWindow = (function() {
           function sessionDisconnectedHandler(event) {
                console.log("sessionDisconnectedHandler");
                console.log(event);
-               self.disconnect();
+               self._disconnectCleanup(); // no need to call disconnect() again
           }
 
           function connectionDestroyedHandler(event) {
@@ -191,19 +283,20 @@ ChatWindow = (function() {
     })();
   }
 
+  ChatWindow.prototype._disconnectCleanup = function() {
+    if (typeof session != "undefined") {
+        console.log("Disconnecting from chat...");
+        session = undefined;
+        sessionId = undefined;
+
+        if ( typeof closedCallback != "undefined") {
+          closedCallback(self);
+        }
+   }
+  }
   ChatWindow.prototype.disconnect = function() {
          if (typeof session != "undefined") {
-              console.log("Disconnecting from chat...");
               session.disconnect();
-              session = undefined;
-              sessionId = undefined;
-
-              // We're disconnected, so we aren't looking for a partner (for UI purposes)
-              $subscriberContainer.removeClass("searching-for-partner");
-
-              if ( typeof closedCallback != "undefined") {
-                closedCallback(self);
-              }
          }
     }
 

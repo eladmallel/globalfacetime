@@ -1,6 +1,6 @@
 <html>
 <head>
-	<script src='/static/js/TB-RTC.min.js'></script>
+	<script src='/static/js/TB-RTC-fixed.js'></script>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
      <script src="/static/js/video-page.js"></script>
 
@@ -20,11 +20,16 @@
      ]
 
      function nextChat() {
-        window.cw = new ChatWindow(GlobalFaceTime.user,"#myPublisherDivContainer","#mySubscriberDivContainer",nextChat);
+        // Fix TokBox bugs by removing ALL children, independent of disconnection events.
+
+        $("#mySubscriberDivContainer").empty();
+        window.cw = new ChatWindow(GlobalFaceTime.user,GlobalFaceTime.chatPublisher,"#myPublisherDivContainer","#mySubscriberDivContainer",".current-video",nextChat);
         window.cw.connect();
      }
 
      $(function() {
+        GlobalFaceTime.chatPublisher = new ChatPublisher("publisherDiv");
+
         $("#next-button").click(function() {
             window.cw.disconnect();
         });
@@ -34,6 +39,13 @@
         var chosenLogo = logoNames[Math.floor(Math.random() * logoNames.length)];   
         $("#logo-text").text(chosenLogo);
 
+        // Add a global listener for TB exceptions that restarts the chat
+        function tbExceptionHandler(event)
+        { 
+            nextChat();
+        }
+
+        TB.addEventListener("exception", tbExceptionHandler); 
      });
      </script>
 </head>
@@ -47,11 +59,15 @@
 
             <div class="videos-section clearfix">
                 <div class="current-video">
-                    <div class="video-frame video-main" id="mySubscriberDivContainer">
+                    <div class="video-frame video-main">
                         <img class="loading-spinner spinner" src="/static/images/big_loader.gif">
                         <img class="loading-spinner search" src="/static/images/search.png">
-                        <div class="video-frame video-secondary" id="myPublisherDivContainer">
+
+                        <div id="mySubscriberDivContainer"></div>
+
+                        <div class="video-frame video-secondary">
                             <img class="loading-spinner" src="/static/images/big_loader.gif">
+                            <div id="myPublisherDivContainer"></div>
                         </div>
                     </div>
                 </div>
