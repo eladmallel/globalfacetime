@@ -1,10 +1,11 @@
-<!DOCTYPE html>
-<html>
-	<body>
-		<form action="/profile" method="POST">
-			{% csrf_token %}
-			<input type="text" name="password" placeholder="Enter password">
-			<input type="submit" value="Go">
-		</form>
-	</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+<h1><strong>2000</strong> shapers.<br><strong>7</strong> minutes.<br><strong>1-on-1</strong> chat.</h1>
+
+<form action="/profile" method="POST" class="user_form password_form">
+	{% csrf_token %}
+    <input type="text" name="password" value="Enter password">
+    <input type="submit" value="Go">
+</form>
+{% endblock %}

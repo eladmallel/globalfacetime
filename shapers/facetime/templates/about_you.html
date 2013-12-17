@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
 {% block content %}
-<form action="" method="post" class="user_form">
+<form action="/chat" method="POST" class="user_form">
+    {% csrf_token %}
     <h2>About You</h2>
-    <input type="text" value="Name">
-    <input type="text" value="Email">
-    <select>
+    <input type="text" name="name" value="Name">
+    <input type="text" name="email" value="Email">
+    <select name="country">
         <option>Country</option>
         <option>Country1</option>
         <option>Country2</option>
@@ -19,7 +20,7 @@
         <option>Country11</option>
         <option>Country12</option>
     </select>
-    <select>
+    <select name="city">
         <option>City</option>
         <option>City1</option>
         <option>City2</option>
@@ -34,7 +35,7 @@
         <option>City11</option>
         <option>City12</option>
     </select>
-    <textarea>Interests</textarea>
+    <textarea name="interests">Interests</textarea>
     <input type="submit" value="Get Started">
 </form>
 {% endblock %}
