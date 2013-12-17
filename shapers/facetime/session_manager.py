@@ -1,6 +1,6 @@
 from shapers import settings 
 import OpenTokSDK
-from shapers.facetime.mongo_helper import SessionsDao
+from shapers.facetime.mongo_helper import SessionsDao, ProfilesDao
 
 import jwt
 import time
@@ -13,12 +13,13 @@ class SessionManager(object):
         self._session_properties = {OpenTokSDK.SessionProperties.p2p_preference: "enabled"}
 
         self._sessions_dao = SessionsDao()
+        self._profiles_dao = ProfilesDao()
 
-    def join_or_create_session(self,user):
+    def join_or_create_session(self, user):
         print "join_or_create_session"
 
         while True:
-            peer_id,session_id = self._sessions_dao.try_join_session(user)
+            peer_id, session_id = self._sessions_dao.try_join_session(user)
             if peer_id != user:
                 break # Prevent us from joining ourself
 
@@ -33,7 +34,13 @@ class SessionManager(object):
 
     def heartbeat(self,session_id,user):
         print "hearbeat: %s - %s"%(user,session_id)
-        return self._sessions_dao.heartbeat(session_id,user)
+        now, heartbeats = self._sessions_dao.heartbeat(session_id,user)
+        profile_ids = heartbeats.keys()
+        profiles = dict()
+        for profile_id in profile_ids:
+            profiles[profile_id] = self._profiles_dao.get_by_id(int(profile_id))
+        return now,heartbeats,profiles
+
 
     def get_alive_sessions(self):
         return self._sessions_dao.get_alive_sessions()        

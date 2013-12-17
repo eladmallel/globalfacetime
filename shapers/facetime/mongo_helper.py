@@ -2,6 +2,7 @@ from pymongo import MongoClient
 from shapers import settings
 import datetime
 import os
+import random
 
 client = MongoClient(settings.MONGO_URL)
 client.globalfacetime.authenticate(settings.MONGO_USERNAME, settings.MONGO_PASSWORD)
@@ -12,6 +13,33 @@ def get_sessions_collection():
 
 def _generate_session_id():
 	return os.urandom(10).encode('hex')
+
+def get_profiles_collection():
+	return db.profiles
+
+class ProfilesDao(object):
+	def __init__(self):
+		self._profiles = get_profiles_collection()
+
+	def get_by_id(self, profile_id):
+		profile = self._profiles.find_one({'profile_id': profile_id})
+		profile['_id'] = str(profile['_id'])
+		return profile
+
+	def create_new_profile(self, name, email, country, city, interests):
+		profile_id = random.randint(0,1<<32)
+
+		profile = {
+			'profile_id': profile_id,
+			'name': name,
+			'email': email,
+			'country': country,
+			'city': city,
+			'interests': interests
+		}
+
+		self._profiles.insert(profile)
+		return profile_id
 
 class SessionsDao(object):
 	def __init__(self):
@@ -34,13 +62,13 @@ class SessionsDao(object):
 			new=False)
 		if session:
 
-			return session['host'],session['_id']
+			return session['host'], session['_id']
 
 		return None,None
 
 	def create_session(self, user_id):
 		session = {
-			'_id': _generate_session_id(), # Generate a random session id to help randomize
+			'_id': _generate_session_id(), # Generate a random session id to help randomize session matches
 			'peer_count': 1,
 			'host': user_id,
 			'peers': {user_id:1},
