@@ -1,29 +1,3 @@
-.main-container {
-    background-color: #22335d;
-}
-
-.main-content {
-    width: 960px;
-    margin: 0 auto;
-    position: relative;
-}
-
-.header {
-    height: 80px;
-}
-
-.logo {
-    float: left;
-    height: 50px;
-    width: 400px; 
-    font-size: 50px;
-    color: white;
-}
-
-.top-menu {
-    float: right;
-}
-
 .videos-section {
 }
 
@@ -37,6 +11,7 @@
     border: solid 10px #cfd2da;
     background-color: #d0c3cf;
     position: relative;
+    text-align: center;
 }
 
 .video-frame object {
@@ -44,37 +19,35 @@
 }
 
 .video-main {
-    height: 400px;
+    height: 539px;
     position: relative;
 }
 
 .video-main .loading-spinner {
-    position: absolute;
-    display: block;
+    position: relative;
+    display: inline-block;
     margin: 0 auto;
     height: 50px;
     width: 50px;
-    left: calc((960px / 2) - (50px / 2));
-    top: calc((400px / 2) - (50px / 2));
+    vertical-align: middle;
+    text-align: center;
 }
 
 .video-secondary {
     position: absolute;
     right: 10px;
     top: 10px;
-    width: calc(20% + 20px);
-    height: calc(20% + 40px);
-    z-index: 700; /* TODO: Find out the right z-index */
+    width: 227px;
+    height: 127px;
+    z-index: 700;
+    border-width: 6px; /* TODO: Find out the right z-index */
 }
 
 .video-secondary .loading-spinner {
-    position: absolute;
-    display: block;
+    display: inline-block;
     margin: 0 auto;
     height: 50px;
     width: 50px;
-    left: calc((185px / 2) - (50px / 2));
-    top: calc((90px / 2) - (50px / 2));
 }
 
 .next-video {
@@ -127,24 +100,6 @@
 
 }
 
-.footer {
-    width: 100%;
-    text-align: center;
-    background-color: white;
-}
-
-.footer-logos-container {
-    display: inline-block;
-}
-
-.footer-logo {
-    float: left;
-    height: 50px;
-    width: 50px;
-    margin-right: 20px;
-    margin-left: 20px;
-}
-
 /* Main loading spinner states (loading an searching) */
 
 /* Standard state is spinner, but show a search icon when searching for partner */
@@ -157,7 +112,7 @@
 }
 
 .searching-for-partner .loading-spinner.search {
-    display: block;
+    display: inline-block;
 }
 
 #myPublisherDivContainer {
@@ -170,4 +125,16 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
+}
+
+.vertical-align-hack {
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+
+.spinner-container {
+    position: absolute;
+    height: 100%;
+    width: 100%;
 }

@@ -63,13 +63,17 @@
 <div class="videos-section clearfix">
     <div class="current-video">
         <div class="video-frame video-main">
+            <div class='vertical-align-hack'></div>
             <img class="loading-spinner spinner" src="/static/images/big_loader.gif">
             <img class="loading-spinner search" src="/static/images/search.png">
 
             <div id="mySubscriberDivContainer"></div>
 
             <div class="video-frame video-secondary">
-                <img class="loading-spinner" src="/static/images/big_loader.gif">
+                <div class='spinner-container'>
+                  <div class='vertical-align-hack'></div>
+                  <img class="loading-spinner" src="/static/images/big_loader.gif">
+                </div>
                 <div id="myPublisherDivContainer"></div>
             </div>
         </div>
