@@ -2,29 +2,34 @@ from shapers import settings
 import OpenTokSDK
 from shapers.facetime.mongo_helper import SessionsDao
 
+import jwt
+import time
+
+TOKEN_EXPIRY = 48*60*60 # Two days in seconds
+
 class SessionManager(object):
     def __init__(self):
-        self._OTSDK = OpenTokSDK.OpenTokSDK(settings.OPENTOK_API_KEY,settings.OPENTOK_API_SECRET)
+        #self._OTSDK = OpenTokSDK.OpenTokSDK(settings.OPENTOK_API_KEY,settings.OPENTOK_API_SECRET)
         self._session_properties = {OpenTokSDK.SessionProperties.p2p_preference: "enabled"}
 
         self._sessions_dao = SessionsDao()
 
-    def join_or_create_session(self):
+    def join_or_create_session(self,user):
         print "join_or_create_session"
 
-        session_id = self._sessions_dao.try_join_session()
-        if not session_id:
-            print "creating"
-            session_id = self._OTSDK.create_session(None, self._session_properties).session_id
-            self._sessions_dao.save_session(session_id)
+        while True:
+            peer_id,session_id = self._sessions_dao.try_join_session(user)
+            if peer_id != user:
+                break # Prevent us from joining ourself
+
+        if not peer_id:
+            print "creating for user %s"%user
+            session_id = self._sessions_dao.create_session(user)
+            peer_id = user
         else:
-            print "joining"
+            print "joining user %s to user %s"%(user,peer_id)
 
-        return session_id,self._create_token_for_session(session_id)
-
-    def _create_token_for_session(self,session_id):
-        print "_create_token_for_session"
-        return self._OTSDK.generate_token(session_id)
+        return peer_id,session_id
 
     def heartbeat(self,session_id,user):
         print "hearbeat: %s - %s"%(user,session_id)
@@ -32,3 +37,13 @@ class SessionManager(object):
 
     def get_alive_sessions(self):
         return self._sessions_dao.get_alive_sessions()        
+
+    @staticmethod
+    def _createAuthToken(serviceId, userId, expiry, apiSecret):
+        apiSecretKey = jwt.base64url_decode(apiSecret)
+        subject = serviceId + ":" + userId
+        payload = { "sub" : subject, "iss" : serviceId, "exp" : expiry }
+        return jwt.encode(payload, apiSecretKey);
+
+    def login(self,user):
+        return self._createAuthToken(settings.VLINE_SERVICE_ID,user,time.time()+TOKEN_EXPIRY,settings.VLINE_API_SECRET)

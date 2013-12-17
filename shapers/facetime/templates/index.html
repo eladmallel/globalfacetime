@@ -1,6 +1,6 @@
 <html>
 <head>
-	<script src='/static/js/TB-RTC-fixed.js'></script>
+	<script src="https://static.vline.com/vline.js"></script>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
      <script src="/static/js/video-page.js"></script>
 
@@ -20,32 +20,44 @@
      ]
 
      function nextChat() {
-        // Fix TokBox bugs by removing ALL children, independent of disconnection events.
+        $(".current-video").addClass('searching-for-partner');
+        window.chatWindow.disconnect();
 
-        $("#mySubscriberDivContainer").empty();
-        window.cw = new ChatWindow(GlobalFaceTime.user,GlobalFaceTime.chatPublisher,"#myPublisherDivContainer","#mySubscriberDivContainer",".current-video",nextChat);
-        window.cw.connect();
+        window.setTimeout(function() {
+            window.chatWindow.connect();
+        },5000);
      }
 
      $(function() {
-        GlobalFaceTime.chatPublisher = new ChatPublisher("publisherDiv");
+        $(".current-video").addClass('searching-for-partner'); /* Show the searching icon before we start */
 
-        $("#next-button").click(function() {
-            window.cw.disconnect();
+        console.log("Logging in...");
+        $.ajax({
+         method: "GET",
+         dataType: "JSON",
+         url: "/login",
+         data: {
+            user:GlobalFaceTime.user
+          },
+          success: function(data) {
+            GlobalFaceTime.chatClient = new ChatClient(data.token,function() {
+                window.chatWindow = new ChatWindow(GlobalFaceTime.user,GlobalFaceTime.chatClient,"#myPublisherDivContainer","#mySubscriberDivContainer");
+
+                nextChat();
+            },function() {
+                $(".current-video").removeClass('searching-for-partner');
+            },function() {
+                nextChat();
+            })
+          }
         });
 
-        nextChat();
+        $("#next-button").click(function() {
+           window.chatWindow.disconnect();
+        });
 
         var chosenLogo = logoNames[Math.floor(Math.random() * logoNames.length)];   
         $("#logo-text").text(chosenLogo);
-
-        // Add a global listener for TB exceptions that restarts the chat
-        function tbExceptionHandler(event)
-        { 
-            nextChat();
-        }
-
-        TB.addEventListener("exception", tbExceptionHandler); 
      });
      </script>
 </head>

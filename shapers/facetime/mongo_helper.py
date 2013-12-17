@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from shapers import settings
 import datetime
+import os
 
 client = MongoClient(settings.MONGO_URL)
 client.globalfacetime.authenticate(settings.MONGO_USERNAME, settings.MONGO_PASSWORD)
@@ -8,6 +9,9 @@ db = client.globalfacetime
 
 def get_sessions_collection():
 	return db.sessions
+
+def _generate_session_id():
+	return os.urandom(10).encode('hex')
 
 class SessionsDao(object):
 	def __init__(self):
@@ -20,34 +24,38 @@ class SessionsDao(object):
 		staleness_threshold = datetime.datetime.utcnow() - datetime.timedelta(milliseconds=settings.CHAT_MAXIMUM_STALENESS_ALLOWED_MILLI)
 		return list(self._sessions.find({'latest_heartbeat': {'$gte': staleness_threshold}}))
 
-	def try_join_session(self):
+	def try_join_session(self,user):
 		staleness_threshold = datetime.datetime.utcnow() - datetime.timedelta(milliseconds=settings.CHAT_MAXIMUM_STALENESS_ALLOWED_MILLI)
 
 		session = self._sessions.find_and_modify(
 			query={'peer_count':1, 'looking_to_merge': False, 'latest_heartbeat': {'$gte': staleness_threshold}},
-			update={'$inc':{'peer_count':1}},
+			update={'$inc':{'peer_count':1,'peers.'+user:1}},
 			upsert=False,
 			new=False)
 		if session:
-			return session['session_id']
 
-		return None
+			return session['host'],session['_id']
 
-	def save_session(self, session_id):
+		return None,None
+
+	def create_session(self, user_id):
 		session = {
+			'_id': _generate_session_id(), # Generate a random session id to help randomize
 			'peer_count': 1,
-			'session_id': session_id,
+			'host': user_id,
+			'peers': {user_id:1},
 			'looking_to_merge': False,
 			'date': datetime.datetime.utcnow(),
 			'heartbeats': {},
 			'latest_heartbeat': datetime.datetime.utcnow(),
 		}
 		self._sessions.insert(session)
+		return session['_id']
 
 	def heartbeat(self,session_id,user):
 		now = datetime.datetime.utcnow()
 		session = self._sessions.find_and_modify(
-			query={'session_id':session_id},
+			query={'_id':session_id},
 			update={'$set':{'heartbeats.'+user:now,'latest_heartbeat':now}},
 			upsert=False,
 			new=True)

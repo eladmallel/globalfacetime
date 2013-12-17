@@ -3,6 +3,8 @@
 // Sessions and tokens are generated on your server and passed down to the client
 var apiKey = "41805792";
 
+var SERVICE_ID = 'chatsummit';
+
 GlobalFaceTime = {}
 GlobalFaceTime.user = "" + Math.floor(Math.random()*100000);
 
@@ -11,295 +13,445 @@ PUBLISHER_DIV_NAME_BASE = "publisherDiv";
 
 MAXIMUM_HEARTBEAT_AGE_BEFORE_DISCONNECT_MILLI = 20000;
 
-TEMPORARY_PUBLISHER_CONTAINER_ID = "temporaryPublisherContainer";
+TEMPORARY_LOCAL_CONTAINER_ID = "temporary-local-container";
+TEMPORARY_REMOTE_CONTAINER_ID = "temporary-remote-container";
+LOCAL_STREAM_ID = 'local-stream';
+REMOTE_STREAM_ID = 'remote-stream';
 
-ChatPublisher = (function() {
-  var session;
-  var publisher;
-  var $defaultPublisherContainer;
-  var $currentPublisherContainer;
-  var publisherId;
+ChatClient = (function() {
+  function ChatClient(authKey,readyCb,connectCb,disconnectCb) {
+    this.connected = false;
 
-  function ChatPublisher(thePublisherId) {
-    publisherId = thePublisherId;
     // Create a default publisher container
-    $defaultPublisherContainer = $(document.createElement("div"));
-    $defaultPublisherContainer.attr("id",TEMPORARY_PUBLISHER_CONTAINER_ID);
-    $defaultPublisherContainer.css("display","none");
-    $defaultPublisherContainer.appendTo($("body"));
+    this.$localContainer = $("<div style='display: none;' id='"+TEMPORARY_LOCAL_CONTAINER_ID+"'></div>").appendTo($("body"));
+    this.$remoteContainer = $("<div style='display: none;' id='"+TEMPORARY_REMOTE_CONTAINER_ID+"'></div>").appendTo($("body"));
 
-    // And set it as the current container
-    $currentPublisherContainer = $defaultPublisherContainer;
+    this.authKey = authKey;
+    this.disconnectCb = disconnectCb;
+    this.connectCb = connectCb;
 
-    // Create an element to be replaced by the publisher
-    var publisherElement = document.createElement("div");
-    publisherElement.setAttribute("id",publisherId);
-    $currentPublisherContainer[0].appendChild(publisherElement);
+    this.client = vline.Client.create({
+      serviceId: window.SERVICE_ID
+    });
 
-    // Start publishing
-    var publisherProperties = {
-      rememberDeviceAccess: true,
-    };
+    // Handle a new incoming connection
+    this.client.on('add:mediaSession', function(event) { this._onMediaSession(event.target); }, this);
 
-    publisher = TB.initPublisher(apiKey, publisherId, publisherProperties);
+    // Show the local stream
+    this.client.getLocalStream().done(function(mediaStream) {
+      console.log("GOT LOCAL STREAM");
+
+      if (mediaStream === this.localStream) {
+        return;
+      }
+
+      if (typeof(this.localStream) !== 'undefined') {
+        console.log("GOT DOUBLE LOCAL STREAM!");
+
+        this.localStream.stop();
+        this.$localContainer.empty();
+      }
+
+      this.localStream = mediaStream;
+      this.localStreamElement = mediaStream.createVideoElement();
+      this.localStreamElement.id = LOCAL_STREAM_ID;
+      this._registerVideoResize(this.localStreamElement);
+      this.$localContainer.append(this.localStreamElement);
+
+      this._unpauseAndResize();
+    },this);
+
+    // Connect to vline
+    console.log("Connecting to vline...");
+    this.client.login(window.SERVICE_ID, {}, this.authKey).done(function(session) {
+      this.vlineSession = session;
+
+      readyCb();
+    }, this);
   }
 
-  ChatPublisher.prototype._switchContainer = function(newContainer) {
-    console.log("CP: Switching container to "+newContainer);
-    var $newPublisherContainer = $(newContainer);
-    $currentPublisherContainer.children().appendTo($newPublisherContainer);
-    $currentPublisherContainer = $newPublisherContainer;
+  ChatClient.prototype._switchContainers = function(newLocalContainer,newRemoteContainer) {
+    //console.log("CP: Switching containers to "+newLocalContainer+", "+newRemoteContainer);
+    
+    this.$localContainer.children().appendTo($(newLocalContainer));
+    this.$localContainer = $(newLocalContainer);
 
+    this.$remoteContainer.children().appendTo($(newRemoteContainer));
+    this.$remoteContainer = $(newRemoteContainer);
+    
     this._unpauseAndResize();
   }
 
-  ChatPublisher.prototype._unpauseAndResize = function() {
-    console.log("CP: Unpause and Resize");
+  ChatClient.prototype._registerVideoResize = function(element) {
+    var $el = $(element);
 
-    // Unpause the video
-    var videos = $currentPublisherContainer.find("video");
-    for (var i = 0; i < videos.length; i++) {
-      videos[i].play();
-    }
-
-    // Resize my publisher to fit
-    var $publisherElement = $(document.getElementById(publisher.id));
-    $publisherElement.width($currentPublisherContainer.width());                         
-    $publisherElement.height($currentPublisherContainer.height());
+    var self=this;
+    $el.on('loadedmetadata', function() {
+      self._unpauseAndResize();
+    });
   }
 
-  ChatPublisher.prototype.publishTo = function(newSession,newContainer) {
-    console.log("CP: Publishing - new container is "+newContainer);
-    // Keep my event listener on the old session, if we had one - so when *it* closes, it doesn't close my publisher
+  ChatClient.prototype._unpauseAndResize = function() {
+    //console.log("CP: Unpause and Resize");
+
+    function doContainer($cont) {
+      // Unpause the video
+      var videos = $cont.find("video");
+      for (var i = 0; i < videos.length; i++) {
+        var video = videos[i];
+        video.play();
+
+        var $video = $(video);
+        var contAspect = $cont.width() / $cont.height();
+        var videoAspect = $video.width() / $video.height();
+
+        if (contAspect > videoAspect) {
+          var scaleFactor = $video.width() / $cont.width()
+          var endHeight = $video.height() / scaleFactor;
+
+          $video.css({
+            width: $cont.width(),
+            position: 'relative',
+            height: '',
+            top: -((endHeight - $cont.height()) / 2)
+          });
+        } else {
+          var scaleFactor = $video.height() / $cont.height()
+          var endWidth = $video.width() / scaleFactor;
+
+          $video.css({
+            height: $cont.height(),
+            position: 'relative',
+            width: '',
+            left: -((endWidth - $cont.width()) / 2)
+          });
+        }
+      }
+    }
+
+    doContainer(this.$localContainer);
+    doContainer(this.$remoteContainer);
+  }
+
+  ChatClient.prototype._onMediaSession = function(mediaSession) {
+    if (mediaSession === this.mediaSession) {
+      return;
+    }
+
+    console.log("Got a media session! No longer searching for a partner :)");
+    this.connectCb();
+
+    if ( typeof(this.mediaSession) !== 'undefined') {
+      this.mediaSession.stop();
+    }
+
+    this.mediaSession = mediaSession;
+
+    var mySessionId = this.sessionId; // To prevent from old events interfering with us
+
+    mediaSession.
+    on('enterState:pending', function() {
+      //console.log('Sessions ' + this.sessionId + ' entering pending state...');
+
+      if (this.sessionId !== mySessionId) {
+        console.log("GOT STALE EVENT....");
+        return;
+      }
+    },this).
+    on('exitState:pending', function() {
+      //console.log('Session ' + this.sessionId + ' exiting pending state...');
+
+      if (this.sessionId !== mySessionId) {
+        console.log("GOT STALE EVENT....");
+        return;
+      }
+    },this).
+    on('enterState:incoming', function() {
+      //console.log('Session ' + this.sessionId + ' entering incoming state...');
+
+      if (this.sessionId !== mySessionId) {
+        console.log("GOT STALE EVENT....");
+        return;
+      }
+    },this).
+    on('exitState:incoming', function() {
+      //console.log('Session ' + this.sessionId + ' exiting incoming state...');
+
+      if (this.sessionId !== mySessionId) {
+        console.log("GOT STALE EVENT....");
+        return;
+      }
+    },this).
+    on('enterState:outgoing', function() {
+      //console.log('Session ' + this.sessionId + ' entering outgoing state...');
+
+      if (this.sessionId !== mySessionId) {
+        console.log("GOT STALE EVENT....");
+        return;
+      }
+    },this).
+    on('exitState:outgoing', function() {
+      //console.log('Session ' + this.sessionId + ' exiting outgoing state...');
+
+      if (this.sessionId !== mySessionId) {
+        console.log("GOT STALE EVENT....");
+        return;
+      }
+    },this).
+    on('enterState:connecting', function() {
+      //console.log('Session ' + this.sessionId + ' entering connecting state...');
+
+      if (this.sessionId !== mySessionId) {
+        console.log("GOT STALE EVENT....");
+        return;
+      }
+    },this).
+    on('exitState:connecting', function() {
+      //console.log('Session ' + this.sessionId + ' exiting connecting state...');
+
+      if (this.sessionId !== mySessionId) {
+        console.log("GOT STALE EVENT....");
+        return;
+      }
+    },this).
+    on('enterState:active', function() {
+      //console.log('Session ' + this.sessionId + ' entering active state...');
+
+      if (this.sessionId !== mySessionId) {
+        console.log("GOT STALE EVENT....");
+        return;
+      }
+    },this).
+    on('exitState:active', function() {
+      //console.log('Session ' + this.sessionId + ' exiting active state...');
+
+      if (this.sessionId !== mySessionId) {
+        console.log("GOT STALE EVENT....");
+        return;
+      }
+    },this).
+    on('mediaSession:removeRemoteStream', function(event) {
+      //console.log('Session ' + this.sessionId + ' lost a remote stream...');
+
+      if (this.sessionId !== mySessionId) {
+        console.log("GOT STALE EVENT....");
+        return;
+      }
+    }, this).
+    on('mediaSession:removeLocalStream', function(event) {
+      //console.log('Session ' + this.sessionId + ' lost a local stream...');
+
+      if (this.sessionId !== mySessionId) {
+        console.log("GOT STALE EVENT....");
+        return;
+      }
+    }, this).
+    on('change:mediaState', function(event) {
+      console.log('Session ' + this.sessionId + ' media state changed from '+event.oldVal + ' to ' + event.val);
+      if (this.sessionId !== mySessionId) {
+        console.log("GOT STALE EVENT....");
+        return;
+      }
+
+      if ( event.val === 'closed' || event.val === 'disconnected' || event.val === 'inactive') {
+        this.disconnect();
+      }
+    }, this).
+    on('mediaSession:addLocalStream', function(event) {
+      //console.log('Session ' + this.sessionId + ' got a local stream...');
+
+      if (this.sessionId !== mySessionId) {
+        console.log("GOT STALE EVENT....");
+        return;
+      }
+    }, this).
+    on('mediaSession:addRemoteStream', function(event) {
+      var remoteStream = event.stream;
+
+      if (remoteStream === this.remoteStream) {
+        return;
+      }
+
+      console.log("GOT REMOTE STREAM");
+      //console.log('Session ' + this.sessionId + ' got a remote stream...');
+
+      if (this.sessionId !== mySessionId) {
+        console.log("GOT STALE EVENT....");
+        return;
+      }
+
+      if (typeof(this.remoteStream) !== 'undefined') {
+        console.log("GOT DOUBLE REMOTE STREAM!");
+
+        //this.remoteStream.stop();
+        this.$remoteContainer.empty();
+      }
+      
+      this.remoteStream = remoteStream;
+      this.remoteStreamElement = remoteStream.createVideoElement();
+      this.remoteStreamElement.id = REMOTE_STREAM_ID;
+      this._registerVideoResize(this.remoteStreamElement);
+      this.$remoteContainer.append(this.remoteStreamElement);
+
+      this._unpauseAndResize();
+    }, this);
+
+    if ( mediaSession.isIncoming()) {
+      // Accept the call if its incoming
+      mediaSession.start();
+    }
+  }
+
+  ChatClient.prototype.listen = function(newSessionId,newLocalContainer,newRemoteContainer) {
+    //console.log("CP: Listening on " + newSessionId + " - New local container is " + newLocalContainer + " New remote is " + newRemoteContainer);
+
+    // Not much else to do, its all event
+    this.sessionId = newSessionId;
+    this._switchContainers(newLocalContainer,newRemoteContainer);
+    this.connected = true;
+  }
+  ChatClient.prototype.connect = function(newSessionId,newLocalContainer,newRemoteContainer) {
+    //console.log("CP: Connecting to " + newSessionId + " - New local container is " + newLocalContainer + " New remote is " + newRemoteContainer);
 
     // And now for the new session
-    session = newSession;
-
-    function sessionDisconnectedHandler(event) {
-      event.preventDefault(); // So it won't destroy my publisher
-      this._switchContainer($defaultPublisherContainer); // Switch to the default container
-    }
-
-    function streamCreatedHandler(event) {
-      console.log("CP: stream created");
-      this._unpauseAndResize();
-    }
-
-    function streamPropertyChangedHandler(event) {
-      console.log("CP: stream property changed");
-      this._unpauseAndResize();
-    }
-
-    // To make sure my publisher won't get destroyed
-    session.addEventListener('sessionDisconnected', sessionDisconnectedHandler,this);
-
-    // To resize my publisher when it gets published
-    session.addEventListener('streamCreated', streamCreatedHandler,this);
-    session.addEventListener('streamPropertyChanged', streamPropertyChangedHandler,this);
-
-    // Finally - publish
-    session.publish(publisher);
-
-    // And put our publisher in the container
-    this._switchContainer(newContainer);
+    this.sessionId = newSessionId;
+    this._switchContainers(newLocalContainer,newRemoteContainer);
+    console.log('Connecting to session',this.sessionId);
+    this.session = this.vlineSession.startMedia(newSessionId);
+    
+    this.connected = true;
   }
 
-  return ChatPublisher;
+  ChatClient.prototype.disconnect = function() {
+    if ( this.connected === false) {
+      return;
+    }
+
+    console.log("DISCONNECTING!!!!");
+
+    this.connected = false;
+
+    if (typeof(this.mediaSession) !== 'undefined') {
+      if (!this.mediaSession.isClosed()) {
+        this.mediaSession.stop();
+      }
+      this.mediaSession = undefined;
+    }
+
+    // No need to empty local, as we keep it around
+    this.$remoteContainer.empty();
+
+    this.disconnectCb();
+  }
+
+  return ChatClient;
 })();
 
 ChatWindow = (function() {
-  // To track unique div names
-  ChatWindow.chatWindowCount = 0;
+  function ChatWindow(user,chatClient,publisherContainer,subscriberContainer) {
+    this.$publisherContainer = $(publisherContainer);
+    this.$subscriberContainer = $(subscriberContainer);
+    this.chatClient = chatClient;
 
-  var sessionId;
-  var session;
-  var user;
-  var self;
-  var $publisherContainer;  
-  var $subscriberContainer;
-  var $parentContainer;
-  var chatWindowNumber;
-  var subscriberDivId;
-  var publisherDivId;
-  var closedCallback;
-  var chatPublisherObj;
+    this.connected = false;
+    this.inSession = false;
+    this.user = user;
 
-  function ChatWindow(myUser,chatPublisher,publisherContainer,subscriberContainer,parentContainer,onClosedCallback) {
-    this.user = myUser;
-    self = this;
-
-    $publisherContainer = $(publisherContainer);
-    $subscriberContainer = $(subscriberContainer);
-    $parentContainer = $(parentContainer);
-    chatPublisherObj = chatPublisher;
-
-    // Create a unique identifier
-    chatWindowNumber = ChatWindow.chatWindowCount;
-    ChatWindow.chatWindowCount++;
-
-    closedCallback = onClosedCallback;
-
-    // We aren't connected yet, so we can't be searching for a partner
-    console.log("Connecting: Not looking for partner");
-    $parentContainer.removeClass("searching-for-partner");
+    this._sendHeartbeat(); // Start the heartbeats
   }
 
   ChatWindow.prototype.connect = function() {
+    if (this.connected) {
+      throw Exception("Cannot connect using an already connected ChatWindow");
+    }
+
+    this.connected = true;
+
+    var self=this;
     $.ajax({
       method: "GET",
       url: "/connect",
       dataType: "json",
       data: {"user":self.user},
       success: function(data) {
-          console.log("Got data from server: ");
-          console.log(data);
+        console.log("Got data from server: ");
+        console.log(data);
 
-          session = TB.initSession(data.sessionId);
-          sessionId = data.sessionId;
+        self.inSession = true;
+        self.sessionId = data.sessionId;
+        self.peerId = data.peerId;
 
-          console.log("session");
-          console.log(session);
-
-          function connectToStreams(streams) {
-              for (var i = 0; i < streams.length; i++) {
-                  var stream = streams[i];
-                  if (stream.connection.connectionId != session.connection.connectionId) {
-
-                    // Create an element to be replaced by the flash
-                    subscriberDivId = SUBSCRIBER_DIV_NAME_BASE+"_"+chatWindowNumber;
-                    var subscriberElement = document.createElement("div");
-                    subscriberElement.setAttribute("id",subscriberDivId);
-                    $subscriberContainer[0].appendChild(subscriberElement);
-
-                    // RTC size change
-                    var subscriberProperties = {
-                      width: $subscriberContainer.width(),
-                      height: $subscriberContainer.height()
-                    };
-
-                    // Subscribe to the remote stream
-                    var subscriber = session.subscribe(stream, subscriberDivId, subscriberProperties); 
-
-                    // We're no longer looking for a partner (for UI purposes)
-                    console.log("Found partner: Not looking for partner");
-                    $parentContainer.removeClass("searching-for-partner");
-
-                    // Flash size change
-                    var subscriberFlashElement = document.getElementById(subscriber.id);
-                    subscriberFlashElement.width = $subscriberContainer.width();                         
-                    subscriberFlashElement.height = $subscriberContainer.height();
-                  }
-              }
-          }
-
-          function sessionConnectedHandler(event) {
-              console.log("in sessionConnectedHandler");
-
-              // Publish
-              chatPublisherObj.publishTo(session,$publisherContainer);
-              console.log("published");
-
-              // Now we wait for a partner - mark our subscriber div as waiting for partner (for UI purposes)
-              console.log("Connected: Looking for partner");
-              $parentContainer.addClass("searching-for-partner");
-
-              connectToStreams(event.streams);
-          }
-
-          function streamCreatedHandler(event) {
-              connectToStreams(event.streams);
-          }
-
-          function streamDestroyedHandler(event) {
-               console.log("streamDestroyedHandler");
-               console.log(event);
-               self.disconnect();
-          }
-
-          function sessionDisconnectedHandler(event) {
-               console.log("sessionDisconnectedHandler");
-               console.log(event);
-               self._disconnectCleanup(); // no need to call disconnect() again
-          }
-
-          function connectionDestroyedHandler(event) {
-               console.log("sessionDestroyedHandler");
-               console.log(event);
-               self.disconnect();
-          }
-
-          session.addEventListener('sessionConnected', sessionConnectedHandler);
-          session.addEventListener('streamCreated', streamCreatedHandler);
-
-          session.addEventListener('streamDestroyed', streamDestroyedHandler);
-          session.addEventListener('sessionDisconnected', sessionDisconnectedHandler);
-          session.addEventListener('connectionDestroyed', connectionDestroyedHandler);
-
-          session.connect(apiKey, data.token);
-
-          console.log("connecting");                  
-      },
-      error: function(error) {
-
-      } 
-    });
-
-    function processHeartbeats(now,heartbeats) {
-         var nowDate = new Date(now);
-
-         //console.log("HEARTBEAT: Processing ");
-         //console.log(heartbeats);
-
-         for (var currUser in heartbeats) {
-              var lastHeartbeat = new Date(heartbeats[currUser]);
-
-              var staleness = nowDate - lastHeartbeat;
-              //console.log("HEARTBEAT: Staleness of " + currUser + " is " + staleness);
-
-              if (staleness >= MAXIMUM_HEARTBEAT_AGE_BEFORE_DISCONNECT_MILLI) {
-                   console.log("Chat is stale ("+staleness+"). Disconnect.");
-                   self.disconnect();
-              }
-         }
-    }
-
-    (function(){
-         if (typeof sessionId != 'undefined') {
-              $.ajax({
-                   method: "GET",
-                   dataType: "JSON",
-                   url: "/heartbeat",
-                   data: {
-                        sessionId:sessionId,
-                        user:self.user
-                   },
-                   success: function(data) {
-                        processHeartbeats(data.now,data.heartbeats);
-                   }
-              });
-         }
-
-        setTimeout(arguments.callee, 1000);
-    })();
-  }
-
-  ChatWindow.prototype._disconnectCleanup = function() {
-    if (typeof session != "undefined") {
-        console.log("Disconnecting from chat...");
-        session = undefined;
-        sessionId = undefined;
-
-        if ( typeof closedCallback != "undefined") {
-          closedCallback(self);
+        // Get a partner
+        //console.log("Got Session: Now get a partner");
+        if (self.peerId === self.user) {
+          console.log("listening");
+          self.chatClient.listen(self.peerId,self.$publisherContainer,self.$subscriberContainer);  
+        } else {
+          console.log("connecting");
+          self.chatClient.connect(self.peerId,self.$publisherContainer,self.$subscriberContainer);  
         }
-   }
+      },
+    });
   }
-  ChatWindow.prototype.disconnect = function() {
-         if (typeof session != "undefined") {
-              session.disconnect();
-         }
+
+  ChatWindow.prototype._processHeartbeats = function(now,heartbeats,sessionId) {
+    var nowDate = new Date(now);
+
+    //console.log("HEARTBEAT: Processing ");
+    //console.log(heartbeats);
+
+    for (var currUser in heartbeats) {
+      var lastHeartbeat = new Date(heartbeats[currUser]);
+
+      var staleness = nowDate - lastHeartbeat;
+    
+      //console.log("HEARTBEAT FOR "+sessionId);
+      //console.log("HEARTBEAT: Staleness of " + currUser + " is " + staleness);
+
+      if (staleness >= MAXIMUM_HEARTBEAT_AGE_BEFORE_DISCONNECT_MILLI) {
+        console.log("Chat is stale ("+staleness+"). Disconnect.");
+        this.disconnect();
+      }
     }
+  }
+
+  ChatWindow.prototype._sendHeartbeat = function() {
+    //console.log("SENDING HEARTBEAT? "+this.inSession);
+
+    var self = this;
+
+    if ( this.inSession ) {
+      $.ajax({
+        method: "GET",
+        dataType: "JSON",
+        url: "/heartbeat",
+        data: {
+          sessionId:this.sessionId,
+          user:this.user
+        },
+        success: function(data) {
+          self._processHeartbeats(data.now,data.heartbeats,self.sessionId);
+        }
+      });
+    }
+
+    var self = this;
+    var f = arguments.callee;
+
+    setTimeout(function() {
+      f.call(self);
+    }, 1000);
+  }
+
+  ChatWindow.prototype.disconnect = function() {
+    if (this.connected === false) {
+      return;
+    }
+    this.connected = false;
+    this.inSession = false;
+
+    this.chatClient.disconnect();
+  }
 
   return ChatWindow;
 })();
-          
