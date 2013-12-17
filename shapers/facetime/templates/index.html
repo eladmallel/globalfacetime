@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<body>
-		<form action="/submitpassword" method="POST">
+		<form action="/profile" method="POST">
 			{% csrf_token %}
 			<input type="text" name="password" placeholder="Enter password">
 			<input type="submit" value="Go">

@@ -12,9 +12,9 @@ def index(request):
 	c = {}
 	return shortcuts.render_to_response('index.html', c, context_instance=RequestContext(request))
 
-def submit_password(request):
+def edit_profile(request):
 	password = request.POST.get('password')
-	if password == 'raphael':
+	if password == 'raphael' or request.session.get('supersecret') == True:
 		request.session['supersecret'] = True
 		c = {}
 		return shortcuts.render_to_response('profile_setup.html', c, context_instance=RequestContext(request))
