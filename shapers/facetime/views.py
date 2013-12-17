@@ -17,7 +17,7 @@ def edit_profile(request):
 	if password == 'raphael' or request.session.get('supersecret') == True:
 		request.session['supersecret'] = True
 		c = {}
-		return shortcuts.render_to_response('profile_setup.html', c, context_instance=RequestContext(request))
+		return shortcuts.render_to_response('about_you.html', c, context_instance=RequestContext(request))
 	else:
 		c = {}
 		return shortcuts.render_to_response('password_error.html', c, context_instance=RequestContext(request))
