@@ -7,6 +7,7 @@ admin.autodiscover()
 urlpatterns = patterns('',
     # Examples:
     url(r'^$', 'shapers.facetime.views.index'),
+    url(r'^chat$', 'shapers.facetime.views.chat'),
     url(r'^connect$', 'shapers.facetime.views.connect'),
     url(r'^login$', 'shapers.facetime.views.login'),
     url(r'^heartbeat', 'shapers.facetime.views.heartbeat'),

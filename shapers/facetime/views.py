@@ -12,6 +12,10 @@ def index(request):
 	c = {}
 	return shortcuts.render_to_response('index.html', c, context_instance=RequestContext(request))
 
+def chat(request):
+	c = {}
+	return shortcuts.render_to_response('chat.html', c, context_instance=RequestContext(request))
+
 def connect(request):
 	global session_manager
 	user = request.GET.get('user')
