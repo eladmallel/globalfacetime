@@ -4,9 +4,19 @@ import json
 from django.http import HttpResponse
 from session_manager import SessionManager
 from django.core.serializers.json import DjangoJSONEncoder
+import random
+from mongo_helper import ProfilesDao
 
 global session_manager
 session_manager = SessionManager()
+
+def verify_supersecret(f):
+	def wrapped(request):
+		if not request.session.get('supersecret', False):
+			return shortcuts.redirect('/')
+		return f(request)
+	return wrapped						
+
 
 def index(request):
 	c = {}
@@ -22,8 +32,26 @@ def edit_profile(request):
 		c = {}
 		return shortcuts.render_to_response('password_error.html', c, context_instance=RequestContext(request))
 
+@verify_supersecret
 def chat(request):
-	c = {}
+	profile_id = None
+	if request.POST.get('name'):
+		# you did POST - need to create your profile and load page
+		profilesDao = ProfilesDao()
+		profile_id = profilesDao.create_new_profile(
+			name=request.POST['name'], 
+			email=request.POST['email'],
+			country=request.POST['country'],
+			city=request.POST['city'],
+			interests=request.POST['interests'])
+	else:
+		profile_id = request.session.get('profile_id', None)
+		if not profile_id:
+			return shortcuts.redirect('/')
+
+	c = {
+		'profile_id': profile_id 
+	}
 	return shortcuts.render_to_response('chat.html', c, context_instance=RequestContext(request))
 
 def connect(request):
