@@ -113,7 +113,8 @@ ChatClient = (function() {
             width: $cont.width(),
             position: 'relative',
             height: '',
-            top: -((endHeight - $cont.height()) / 2)
+            top: -((endHeight - $cont.height()) / 2),
+            left: 0
           });
         } else {
           var scaleFactor = $video.height() / $cont.height()
@@ -123,7 +124,8 @@ ChatClient = (function() {
             height: $cont.height(),
             position: 'relative',
             width: '',
-            left: -((endWidth - $cont.width()) / 2)
+            left: -((endWidth - $cont.width()) / 2),
+            top: 0
           });
         }
       }

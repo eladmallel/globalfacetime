@@ -1,3 +1,27 @@
+@font-face {
+    font-family: 'tide_sans500_dudette';
+    src: url('../fonts/tidesans-500dudette-webfont.eot');
+    src: url('../fonts/tidesans-500dudette-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/tidesans-500dudette-webfont.woff') format('woff'),
+         url('../fonts/tidesans-500dudette-webfont.ttf') format('truetype'),
+         url('../fonts/tidesans-500dudette-webfont.svg#tide_sans500_dudette') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+
+@font-face {
+    font-family: 'tide_sans200_lil_mondo';
+    src: url('../fonts/tidesans-200lilmondo-webfont.eot');
+    src: url('../fonts/tidesans-200lilmondo-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/tidesans-200lilmondo-webfont.woff') format('woff'),
+         url('../fonts/tidesans-200lilmondo-webfont.ttf') format('truetype'),
+         url('../fonts/tidesans-200lilmondo-webfont.svg#tide_sans200_lil_mondo') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
 .videos-section {
 }
 
@@ -54,15 +78,14 @@
     float: left;
     width: 100px;
     position: absolute;
-    left: 100%;
-    height: 400px;
+    left: 105%;
     background-color: blue;
     margin-left: 50px;
 }
 
 .video-next {
     background-color: #495171;
-    height: 400px;
+    height: 539px;
     position: relative;
     border-right: 0px!important;
 }
@@ -77,15 +100,20 @@
 }
 
 .connect-button {
-    float: left;
-    margin-right: 20px;
-    width: 80px;
-    height: 80px;
+    width: 112px;
+    height: 32px;
+    background-color: #38d37a;
+    border-radius: 6px;
+    margin-top: 6px;
+    font-size: 20px;
 }
 
 .next-button {
     float: right;
     height: 60px;
+    padding-top: 25px;
+    padding-right: 3px;
+    text-align: center;
 }
 
 .partner-information {
@@ -93,11 +121,17 @@
 }
 
 .partner-name {
-
+    font-family: 'tide_sans500_dudette';
+    font-size: 37px;
+    padding-top: 8px;
 }
 
 .partner-description {
-
+    font-family: 'tide_sans200_lil_mondo';
+    font-size: 22px;
+    color: #b6c7f1;
+    margin-top: -2px;
+    line-height: 27px;
 }
 
 /* Main loading spinner states (loading an searching) */
@@ -137,4 +171,42 @@
     position: absolute;
     height: 100%;
     width: 100%;
+}
+
+.partner-profile-picture {
+    width: 112px;
+    height: 115px;
+    background-image: url(../images/profile-picture.png);
+    border-radius: 6px;
+    
+}
+
+.connect-section {
+    width: 114px;
+    float: left;
+    margin-right: 24px;
+    
+}
+
+.connect-plus {
+    display: inline-block;
+    width: 17px;
+    height: 18px;
+    vertical-align: -3px;
+    background-image: url(../images/connect-plus.png);
+    margin-left: 7px;
+    margin-right: 3px;
+}
+
+.next-arrows {
+    display: inline-block;
+    background-image: url(../images/next-arrow.png);
+    width: 25px;
+    height: 24px;
+    
+}
+
+.next-text {
+    font-size: 14px;
+    
 }
