@@ -6,7 +6,7 @@ var apiKey = "41805792";
 var SERVICE_ID = 'chatsummit';
 
 GlobalFaceTime = {}
-GlobalFaceTime.user = "" + Math.floor(Math.random()*100000);
+GlobalFaceTime.user = "" + profile_id;
 
 SUBSCRIBER_DIV_NAME_BASE = "subscriberDiv";
 PUBLISHER_DIV_NAME_BASE = "publisherDiv";
@@ -372,7 +372,9 @@ ChatWindow = (function() {
       method: "GET",
       url: "/connect",
       dataType: "json",
-      data: {"user":self.user},
+      data: {
+        "profile_id":self.user
+      },
       success: function(data) {
         console.log("Got data from server: ");
         console.log(data);
@@ -380,6 +382,7 @@ ChatWindow = (function() {
         self.inSession = true;
         self.sessionId = data.sessionId;
         self.peerId = data.peerId;
+        self.peerProfile = data.peerProfile;
 
         // Get a partner
         //console.log("Got Session: Now get a partner");
@@ -388,13 +391,14 @@ ChatWindow = (function() {
           self.chatClient.listen(self.peerId,self.$publisherContainer,self.$subscriberContainer);  
         } else {
           console.log("connecting");
-          self.chatClient.connect(self.peerId,self.$publisherContainer,self.$subscriberContainer);  
+          self.chatClient.connect(self.peerId,self.$publisherContainer,self.$subscriberContainer);
+          window.peerEmail = self.peerProfile.email
         }
       },
     });
   }
 
-  ChatWindow.prototype._processHeartbeats = function(now,heartbeats,sessionId) {
+  ChatWindow.prototype._processHeartbeats = function(now, heartbeats, sessionId) {
     var nowDate = new Date(now);
 
     //console.log("HEARTBEAT: Processing ");
@@ -411,6 +415,16 @@ ChatWindow = (function() {
       if (staleness >= MAXIMUM_HEARTBEAT_AGE_BEFORE_DISCONNECT_MILLI) {
         console.log("Chat is stale ("+staleness+"). Disconnect.");
         this.disconnect();
+      }
+    }    
+  }
+
+  ChatWindow.prototype._processProfiles = function(my_profile_id, profiles) {
+    for (var profile_id in profiles) {
+      if (profile_id != my_profile_id) {
+        var profile = profiles[profile_id];
+        $('.partner-name').text(profile.name);
+        $('.partner-description').text(profile.interests);
       }
     }
   }
@@ -430,7 +444,8 @@ ChatWindow = (function() {
           user:this.user
         },
         success: function(data) {
-          self._processHeartbeats(data.now,data.heartbeats,self.sessionId);
+          self._processHeartbeats(data.now, data.heartbeats, self.sessionId);
+          self._processProfiles(self.user, data.profiles);
         }
       });
     }

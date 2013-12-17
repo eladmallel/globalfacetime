@@ -22,7 +22,9 @@ class ProfilesDao(object):
 		self._profiles = get_profiles_collection()
 
 	def get_by_id(self, profile_id):
-		return self._profiles.find_one({'profile_id': profile_id})
+		profile = self._profiles.find_one({'profile_id': profile_id})
+		profile['_id'] = str(profile['_id'])
+		return profile
 
 	def create_new_profile(self, name, email, country, city, interests):
 		profile_id = random.randint(0,1<<32)
@@ -60,7 +62,7 @@ class SessionsDao(object):
 			new=False)
 		if session:
 
-			return session['host'],session['_id']
+			return session['host'], session['_id']
 
 		return None,None
 
