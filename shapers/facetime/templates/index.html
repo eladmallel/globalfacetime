@@ -1,3 +1,10 @@
+<!DOCTYPE html>
 <html>
-	bla
+	<body>
+		<form action="/profile" method="POST">
+			{% csrf_token %}
+			<input type="text" name="password" placeholder="Enter password">
+			<input type="submit" value="Go">
+		</form>
+	</body>
 </html>

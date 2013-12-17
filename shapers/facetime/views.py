@@ -12,6 +12,16 @@ def index(request):
 	c = {}
 	return shortcuts.render_to_response('index.html', c, context_instance=RequestContext(request))
 
+def edit_profile(request):
+	password = request.POST.get('password')
+	if password == 'raphael' or request.session.get('supersecret') == True:
+		request.session['supersecret'] = True
+		c = {}
+		return shortcuts.render_to_response('profile_setup.html', c, context_instance=RequestContext(request))
+	else:
+		c = {}
+		return shortcuts.render_to_response('password_error.html', c, context_instance=RequestContext(request))
+
 def chat(request):
 	c = {}
 	return shortcuts.render_to_response('chat.html', c, context_instance=RequestContext(request))
