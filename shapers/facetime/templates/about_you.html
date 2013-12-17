@@ -1,104 +1,40 @@
-<!DOCTYPE html>
-<!--[if lt IE 7 ]> <html class="ie ltie7 ltie8 ltie9" lang="en"> <![endif]-->
-<!--[if IE 7 ]>    <html class="ie ie7 ltie8 ltie9" lang="en"> <![endif]-->
-<!--[if IE 8 ]>    <html class="ie ie8 ltie9" lang="en"> <![endif]-->
-<!--[if IE 9 ]>    <html class="ie ie9 ltie10" lang="en"> <![endif]-->
-<!--[if gt IE 9]><!--> <html lang="en" class=""> <!--<![endif]-->
-
-<head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-<meta name="keywords" content=""/>
-<meta name="description" content=""/>
-<meta name="author" content="Alexandru Stoicescu"/>
-<title></title>
-
-<!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
-<link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
-
-<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' rel='stylesheet' type='text/css'>
-
-</head>
-
-<body>
-
-	<div class="main_bg">
-    
-    	<div class="wrap">
-    
-            <header id="header" class="clearfix">
-                <img id="logo" alt="logo" class="left" src="/static/images/logo.png">
-                
-                <div class="links right">
-                    <a href="#">About</a>
-                    <span class="divider">|</span>
-                    <a href="#">Help</a>
-                </div>
-                
-            </header>
-            
-            <div id="main_content">
-                
-                <form action="" method="post" class="user_form">
-                    <h2>About You</h2>
-                    <input type="text" value="Name">
-                    <input type="text" value="Email">
-                    <select>
-                        <option>Country</option>
-                        <option>Country1</option>
-                        <option>Country2</option>
-                        <option>Country3</option>
-                        <option>Country4</option>
-                        <option>Country5</option>
-                        <option>Country6</option>
-                        <option>Country7</option>
-                        <option>Country8</option>
-                        <option>Country9</option>
-                        <option>Country10</option>
-                        <option>Country11</option>
-                        <option>Country12</option>
-                    </select>
-                    <select>
-                        <option>City</option>
-                        <option>City1</option>
-                        <option>City2</option>
-                        <option>City3</option>
-                        <option>City4</option>
-                        <option>City5</option>
-                        <option>City6</option>
-                        <option>City7</option>
-                        <option>City8</option>
-                        <option>City9</option>
-                        <option>City10</option>
-                        <option>City11</option>
-                        <option>City12</option>
-                    </select>
-                    <textarea>Interests</textarea>
-                    <input type="submit" value="Get Started">
-                </form>
-            
-            </div><!--end main_content-->
-        
-        </div>
-
-    </div>
-
-	<div class="wrap">
-            
-        <footer id="footer">
-        	<div class="align_center footer_logos">
-            	<img src="/static/images/footer_logo1.jpg" width="124" height="80">
-                <img src="/static/images/footer_logo2.jpg" width="92" height="80">
-            </div>
-        </footer>
-        
-    </div>
-
-
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-<script>window.jQuery || document.write('<script src="/static/js/jquery-1.9.1.min.js"><\/script>')</script>
-<script src="/static/js/jquery.dd.min.js"></script>
-<script src="/static/js/main.js"></script>
-
-</body>
-</html>
+{% extends 'base.html' %}
+{% block content %}
+<form action="" method="post" class="user_form">
+    <h2>About You</h2>
+    <input type="text" value="Name">
+    <input type="text" value="Email">
+    <select>
+        <option>Country</option>
+        <option>Country1</option>
+        <option>Country2</option>
+        <option>Country3</option>
+        <option>Country4</option>
+        <option>Country5</option>
+        <option>Country6</option>
+        <option>Country7</option>
+        <option>Country8</option>
+        <option>Country9</option>
+        <option>Country10</option>
+        <option>Country11</option>
+        <option>Country12</option>
+    </select>
+    <select>
+        <option>City</option>
+        <option>City1</option>
+        <option>City2</option>
+        <option>City3</option>
+        <option>City4</option>
+        <option>City5</option>
+        <option>City6</option>
+        <option>City7</option>
+        <option>City8</option>
+        <option>City9</option>
+        <option>City10</option>
+        <option>City11</option>
+        <option>City12</option>
+    </select>
+    <textarea>Interests</textarea>
+    <input type="submit" value="Get Started">
+</form>
+{% endblock %}
