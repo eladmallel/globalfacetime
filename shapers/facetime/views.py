@@ -57,3 +57,10 @@ def get_alive_sessions(request):
 		del s["_id"] # ObjectIds don't serialize
 		
 	return HttpResponse(json.dumps(sessions,cls=DjangoJSONEncoder), content_type="application/json")
+
+
+def about_you(request):
+	return shortcuts.render_to_response('about_you.html',{},context_instance=RequestContext(request))
+
+def password(request):
+	return shortcuts.render_to_response('password.html',{},context_instance=RequestContext(request))
