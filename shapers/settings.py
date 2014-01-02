@@ -14,12 +14,13 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'shapers',
-        'USER': 'root',
-        'PASSWORD': 'root',
-        'HOST': 'localhost',
-        'PORT': '',                   # Set to empty string for default.
+        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': os.path.join(os.path.realpath(os.path.realpath(os.path.dirname(__file__))), 'chatsummit.db')
+        #'NAME': 'shapers',
+        #'USER': 'root',
+        #'PASSWORD': 'root',
+        #'HOST': 'localhost',
+        #'PORT': '',                   # Set to empty string for default.
     }
 }
 
