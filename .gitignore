@@ -1,3 +1,4 @@
 *.pyc
 .metadata
 .DS_Store
+*.db

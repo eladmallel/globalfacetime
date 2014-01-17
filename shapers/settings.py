@@ -14,12 +14,13 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        #'NAME': os.path.join(os.path.realpath(os.path.realpath(os.path.dirname(__file__))), 'chatsummit.db')
         'NAME': 'shapers',
-        'USER': 'root',
+        'USER': 'postgres',
         'PASSWORD': 'root',
-        'HOST': 'localhost',
-        'PORT': '',                   # Set to empty string for default.
+        #'HOST': 'localhost',
+        #'PORT': '',                   # Set to empty string for default.
     }
 }
 
@@ -185,3 +186,23 @@ MONGO_PASSWORD = 'RHE6uMRpgRysSq'
 MONGO_URL = 'mongodb://ds047438.mongolab.com:47438/globalfacetime'
 
 CHAT_MAXIMUM_STALENESS_ALLOWED_MILLI = 20000
+
+# Parse database configuration from $DATABASE_URL
+import dj_database_url
+DATABASES['default'] =  dj_database_url.config()
+
+# Honor the 'X-Forwarded-Proto' header for request.is_secure()
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Allow all host headers
+ALLOWED_HOSTS = ['*']
+
+# Static asset configuration
+import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_ROOT = 'staticfiles'
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
