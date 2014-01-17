@@ -1,6 +1,17 @@
 {% extends 'base.html' %}
+{% block scripts %}
+
+<script src="/static/js/about-you.js"></script>
+
+<script type="text/javascript">
+    $(function() {
+        AboutYou($('.js-about-you-form'));
+    });
+</script>
+
+{% endblock %}
 {% block content %}
-<form action="/chat" method="POST" class="user_form">
+<form action="/chat" method="POST" class="user_form js-about-you-form">
     {% csrf_token %}
     <h2>About You</h2>
     <input type="text" name="name" placeholder="Name">
