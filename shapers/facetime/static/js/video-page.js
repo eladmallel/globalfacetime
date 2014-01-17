@@ -384,7 +384,7 @@ ChatWindow = (function() {
         self.inSession = true;
         self.sessionId = data.sessionId;
         self.peerId = data.peerId;
-        self.peerProfile = data.peerProfile;
+        self.peerProfile = data.peerProfile;        
 
         // Get a partner
         //console.log("Got Session: Now get a partner");
@@ -436,7 +436,7 @@ ChatWindow = (function() {
   ChatWindow.prototype._sendHeartbeat = function() {
     //console.log("SENDING HEARTBEAT? "+this.inSession);
 
-    var self = this;
+    var self = this;    
 
     if ( this.inSession ) {
       $.ajax({
@@ -474,3 +474,31 @@ ChatWindow = (function() {
 
   return ChatWindow;
 })();
+
+function ConnectButtonHandler($button) {
+  var self = this;
+
+  $button.on('click', function () {
+    $.gritter.add({title: "Connecting...", text: "This might take a few seconds."});
+
+    $.ajax({
+        method: "GET",
+        dataType: "JSON",
+        url: "/sharecontact",
+        data: {
+          sessionId:window.chatWindow.sessionId,
+          user:window.chatWindow.user
+        },
+        success: function(data) {
+          if (data.successful) {
+            $.gritter.add({title: "Connected!", text: "Your email address was sent to your peer for follow up!"});
+          } else {
+            $.gritter.add({title: "Oops!", text: "ChatSummit couldn't email your peer... Exchange emails verbally while you still can!"});            
+          }         
+        },
+        error: function(error) {
+          $.gritter.add({title: "Oops!", text: "ChatSummit couldn't email your peer... Exchange emails verbally while you still can!"});
+        }
+      });
+  });
+}

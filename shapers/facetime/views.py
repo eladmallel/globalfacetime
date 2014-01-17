@@ -4,9 +4,10 @@ import json
 from django.http import HttpResponse
 from session_manager import SessionManager
 from django.core.serializers.json import DjangoJSONEncoder
-import random
-from mongo_helper import ProfilesDao
 import time
+from mongo_helper import ProfilesDao
+import pystmark
+from shapers import settings
 
 global session_manager
 session_manager = SessionManager()
@@ -129,3 +130,62 @@ def about_you(request):
 
 def password(request):
 	return shortcuts.render_to_response('password.html',{},context_instance=RequestContext(request))
+
+def share_contact(request):
+	global session_manager
+	session_id = request.GET.get("sessionId")
+	user = request.GET.get("user")
+
+	now,heartbeats,profiles = session_manager.heartbeat(session_id,user)
+
+	user_profile = None
+	peer_profile = None
+
+	print "Going to search within these profiles: %s using this user: %s" % (profiles, user)
+
+	for profile in profiles.values():
+		if profile['profile_id'] == long(user):
+			user_profile = profile
+		else:
+			peer_profile = profile
+
+	if user_profile == None or peer_profile == None:
+		return HttpResponse(
+			json.dumps({
+				'successful':False,
+				'reason': 'Failed to find one of the profiles.'
+			}), 
+			content_type="application/json")		
+
+	from_email = user_profile['email']
+	from_name = user_profile['name']
+	to_email = peer_profile['email']
+	to_name = peer_profile['name']
+
+	message = pystmark.Message(
+		sender=settings.POSTMARK_SENDER, 
+		to=to_email,
+		reply_to=from_email,
+		subject='%s wants to connect with you' % from_name,
+		text=format_email_body(to_name, from_name, from_email))
+
+	email_response = pystmark.send(message, api_key=settings.POSTMARK_API_KEY)
+
+	successful = True if email_response.ok else False
+	return HttpResponse(
+		json.dumps({
+			'successful':successful,
+			'reason': ('' if successful else email_response.text)
+		}),
+		content_type="application/json")
+
+def format_email_body(to_name, from_name, from_email):
+	return '''Hi %s, 
+
+Looks like %s really liked meeting you on ChatSummit!
+Be nice, follow up promptly. 
+
+Just reply to this thread or email %s to get in touch. 
+
+ChatSummit,
+On behalf of %s''' % (to_name, from_name, from_email, from_name)
