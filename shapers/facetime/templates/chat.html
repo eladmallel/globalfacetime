@@ -55,6 +55,8 @@
      });
 
      $(function() {
+        window.connectButtonHandler = ConnectButtonHandler($('.js-connect-button'));
+                        
         window.stateMachine.start();
         $(".current-video").addClass('searching-for-partner'); /* Show the searching icon before we start */
 
@@ -84,7 +86,7 @@
         });
 
         var chosenLogo = logoNames[Math.floor(Math.random() * logoNames.length)];   
-        $("#logo-text").text(chosenLogo);
+        $("#logo-text").text(chosenLogo);        
      });
      </script>
 
@@ -120,7 +122,7 @@
 <div class="chat-information">
     <div class="connect-section">
       <div class="partner-profile-picture"></div>
-      <div class="connect-button"><div class='connect-plus'></div>connect</div>  
+      <div class="connect-button js-connect-button"><div class='connect-plus'></div>connect</div>  
     </div>
     <div class="next-button" id="next-button"><div class='next-arrows'></div><div class='next-text'>NEXT</div></div>
     <div class="partner-information">

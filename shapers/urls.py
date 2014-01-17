@@ -16,6 +16,7 @@ urlpatterns = patterns('',
     url(r'^_get_alive_sessions$', 'shapers.facetime.views.get_alive_sessions'),
     url(r'^about_you$', 'shapers.facetime.views.about_you'),
     url(r'^password$', 'shapers.facetime.views.password'),
+    url(r'^sharecontact$', 'shapers.facetime.views.share_contact'),
     # url(r'^shapers/', include('shapers.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:

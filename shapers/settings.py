@@ -207,3 +207,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
+
+POSTMARK_API_KEY='74c7489f-2ec9-4af3-98b9-b425db338aa3'
+POSTMARK_SENDER='Chat Summit <hello@chatsummit.com>'
