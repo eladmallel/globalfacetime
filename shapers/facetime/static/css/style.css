@@ -9,7 +9,7 @@ html, body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, fiel
 
 h1, h2, h3, h4, h5, h6 { line-height:normal; font-weight:normal; }
 
-a { text-decoration: none; outline:none; cursor:pointer; }
+a { text-decoration: none; outline:none; cursor:pointer; color:#38d37a;}
 
 b, strong { font-weight: bold; }
 
