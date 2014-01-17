@@ -175,10 +175,10 @@
 
 .partner-profile-picture {
     width: 112px;
-    height: 115px;
-    background-image: url(../images/profile-picture.png);
-    border-radius: 6px;
-    
+    height: 112px;
+    border-radius: 75px;
+    border: 1px solid white;
+    background-image: url(http://screencritix.com/wp-content/uploads/2013/10/avatar-navi-120x120.jpg);    
 }
 
 .connect-section {
