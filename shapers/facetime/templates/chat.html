@@ -6,6 +6,8 @@
 </script>
 
 <script src="https://static.vline.com/vline.js"></script>
+<script src="/static/js/jquery.gritter.min.js"></script>
+<script src="/static/js/chat-state.js"></script>
 <script src="/static/js/video-page.js"></script>
 
 <script>
@@ -28,7 +30,32 @@
         },5000);
      }
 
+     window.stateMachine = new ChatStateMachine({
+        startIn: 10000,
+        eventLength: 20000,
+        timePerPerson: 2000
+     },function(event,data) {
+        console.log(event + " " + data);
+
+        if ( event === 'eventEarly' ) {
+          $.gritter.add({title: "You're early!", text: "The event is starting in "+data, class_name: 'before-event-notification', sticky: true});
+        }
+
+        if ( event === 'eventStartIn' ) {
+          $(".before-event-notification p").text("The event is starting in "+data);
+        }
+
+        if ( event === 'eventStart' ) {
+          $.gritter.add({title: "We're starting!!", text: "The event is now starting"});
+        }
+
+        if ( event === 'eventStartIn' ) {
+          $(".before-event-notification p").text("The event is starting in "+data);
+        }
+     });
+
      $(function() {
+        window.stateMachine.start();
         $(".current-video").addClass('searching-for-partner'); /* Show the searching icon before we start */
 
         console.log("Logging in...");
