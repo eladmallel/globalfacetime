@@ -106,6 +106,7 @@
     border-radius: 6px;
     margin-top: 6px;
     font-size: 20px;
+    cursor: pointer;
 }
 
 .next-button {
