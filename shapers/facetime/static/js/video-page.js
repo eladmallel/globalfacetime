@@ -427,6 +427,8 @@ ChatWindow = (function() {
         var profile = profiles[profile_id];
         $('.partner-name').text(profile.name);
         $('.partner-description').text(profile.interests);
+        $('.partner-profile-picture').removeClass('default');
+        $('.partner-profile-picture').css('background-image', 'url(' + profile.avatar + ')');
       }
     }
   }

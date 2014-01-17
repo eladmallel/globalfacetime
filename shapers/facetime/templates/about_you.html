@@ -1,41 +1,24 @@
 {% extends 'base.html' %}
+{% block scripts %}
+
+<script src="/static/js/about-you.js"></script>
+
+<script type="text/javascript">
+    $(function() {
+        AboutYou($('.js-about-you-form'));
+    });
+</script>
+
+{% endblock %}
 {% block content %}
-<form action="/chat" method="POST" class="user_form">
+<form action="/chat" method="POST" class="user_form js-about-you-form">
     {% csrf_token %}
     <h2>About You</h2>
-    <input type="text" name="name" value="Name">
-    <input type="text" name="email" value="Email">
-    <select name="country">
-        <option>Country</option>
-        <option>Country1</option>
-        <option>Country2</option>
-        <option>Country3</option>
-        <option>Country4</option>
-        <option>Country5</option>
-        <option>Country6</option>
-        <option>Country7</option>
-        <option>Country8</option>
-        <option>Country9</option>
-        <option>Country10</option>
-        <option>Country11</option>
-        <option>Country12</option>
-    </select>
-    <select name="city">
-        <option>City</option>
-        <option>City1</option>
-        <option>City2</option>
-        <option>City3</option>
-        <option>City4</option>
-        <option>City5</option>
-        <option>City6</option>
-        <option>City7</option>
-        <option>City8</option>
-        <option>City9</option>
-        <option>City10</option>
-        <option>City11</option>
-        <option>City12</option>
-    </select>
-    <textarea name="interests">Interests</textarea>
+    <input type="text" name="name" placeholder="Name">
+    <input type="text" name="email" placeholder="Email">
+    <input type="text" name="country" placeholder="Country">
+    <input type="text" name="city" placeholder="City">    
+    <textarea name="interests" placeholder="Interests"></textarea>
     <input type="submit" value="Get Started">
 </form>
 {% endblock %}

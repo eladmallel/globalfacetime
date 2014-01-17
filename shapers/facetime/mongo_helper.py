@@ -3,10 +3,16 @@ from shapers import settings
 import datetime
 import os
 import random
+import urllib, hashlib
 
 client = MongoClient(settings.MONGO_URL)
 client.globalfacetime.authenticate(settings.MONGO_USERNAME, settings.MONGO_PASSWORD)
 db = client.globalfacetime
+
+def calculate_gravatar_url(email):
+	gravatar_url = "http://www.gravatar.com/avatar/" + hashlib.md5(email.lower()).hexdigest() + "?"
+	gravatar_url += urllib.urlencode({'d':'http://screencritix.com/wp-content/uploads/2013/10/avatar-navi-120x120.jpg', 's':str(120)})
+	return gravatar_url
 
 def get_sessions_collection():
 	return db.sessions
@@ -29,13 +35,16 @@ class ProfilesDao(object):
 	def create_new_profile(self, name, email, country, city, interests):
 		profile_id = random.randint(0,1<<32)
 
+		avatar_url = calculate_gravatar_url(email)
+
 		profile = {
 			'profile_id': profile_id,
 			'name': name,
 			'email': email,
 			'country': country,
 			'city': city,
-			'interests': interests
+			'interests': interests,
+			'avatar': avatar_url
 		}
 
 		self._profiles.insert(profile)
