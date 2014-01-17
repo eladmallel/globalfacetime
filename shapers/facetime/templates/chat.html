@@ -30,32 +30,96 @@
         },5000);
      }
 
-     window.stateMachine = new ChatStateMachine({
-        startIn: 10000,
-        eventLength: 20000,
-        timePerPerson: 2000
-     },function(event,data) {
+     var END_CHAT_NOTIFY_PERIOD = 1000*60;
+     var showingEndChat = false;
+     var chatEndNotif;
+     var timeLeftInEvent;
+     var timeLeftInChat;
+     var showingLastChat = false;
+     var lastChatNotif;
+     var endPending = false;
+
+     function handleEvent(event,data) {
         console.log(event + " " + data);
 
+        if ( event === 'chatStart' || event === 'chatInProgress') {
+          timeLeftInChat = data;
+        }
+
+        if ( event === 'eventInProgress' || event == 'eventStart' ) {
+          timeLeftInEvent = data;
+        }
+
+        if ( typeof(timeLeftInEvent) !== 'undefined' && typeof(timeLeftInChat) !== 'undefined') {
+          if ( timeLeftInEvent < timeLeftInChat ) {
+            if ( !showingLastChat ) {
+              lastChatNotif = $.gritter.add({title: "Last chat!", text: "This is your last chat!", class_name: 'last-chat-notification', sticky: true});
+              showingLastChat = true;
+            }
+          }
+        }
+
+        if ( event === 'eventEnd' ) {
+          timeLeftInEvent = undefined;
+
+          if ( showingLastChat ) {
+            $.gritter.remove(lastChatNotif);
+          }
+        }
+
+        if ( event === 'chatInProgress' ) {
+          if ( data <= END_CHAT_NOTIFY_PERIOD ) {
+            if ( !showingEndChat ) {
+              chatEndNotif = $.gritter.add({title: "Time's almost up!", text: "You chat will end in "+data, class_name: 'end-chat-notification', sticky: true});
+              showingEndChat = true;
+            } else {
+              $(".end-chat-notification p").text("You chat will end in "+data);
+            }
+          }
+        }
+
+        if ( event === 'chatEnd' ) {
+          if ( showingEndChat ) {
+            showingEndChat = false;
+            $.gritter.remove(chatEndNotif);
+          }
+          timeLeftInChat = undefined;
+        }
+
         if ( event === 'eventEarly' ) {
-          $.gritter.add({title: "You're early!", text: "The event is starting in "+data, class_name: 'before-event-notification', sticky: true});
+          $(".frame-contents").text("You're early! We're starting in "+data);
         }
 
-        if ( event === 'eventStartIn' ) {
-          $(".before-event-notification p").text("The event is starting in "+data);
+        if ( event === 'eventLate' ) {
+          $(".frame-contents").text("You're late! Go go go!");
         }
 
-        if ( event === 'eventStart' ) {
-          $.gritter.add({title: "We're starting!!", text: "The event is now starting"});
+        if ( event === 'eventStartIn') {
+          $(".frame-contents").text("You're early! We're starting in "+data);
         }
 
-        if ( event === 'eventStartIn' ) {
-          $(".before-event-notification p").text("The event is starting in "+data);
+        if ( event === 'eventStart' && typeof(timeLeftInChat) !== 'undefined') {
+          $.gritter.add({title: "Event is starting!", text: "Yay!"});
         }
-     });
+
+        if ( event === 'eventStart') {
+          $(".frame-contents").text("Event is a go! Click to start!");
+        }
+
+        if ( event === 'eventEnd' ) {
+          $.gritter.add({title: "Event is over!", text: "Yay!"});
+          endPending = true;
+        }
+
+        if ( endPending && typeof(timeLeftInChat) === 'undefined') {
+          $(".frame-contents").text("Event is over! Goodbye!");
+          endPending = false;
+        }
+     }
+     
+     window.stateMachine = new ChatStateMachine(handleEvent);
 
      $(function() {
-        window.stateMachine.start();
         $(".current-video").addClass('searching-for-partner'); /* Show the searching icon before we start */
 
         console.log("Logging in...");
@@ -67,6 +131,8 @@
             user:GlobalFaceTime.user
           },
           success: function(data) {
+            window.stateMachine.start(data.eventInfo);
+
             GlobalFaceTime.chatClient = new ChatClient(data.token,function() {
                 window.chatWindow = new ChatWindow(GlobalFaceTime.user,GlobalFaceTime.chatClient,"#myPublisherDivContainer","#mySubscriberDivContainer");
 
@@ -96,6 +162,7 @@
         <div class="video-frame video-main">
             <div class='spinner-container'>
               <div class='vertical-align-hack'></div>
+              <div class='frame-contents' style='display: inline-block; text-align: center; vertical-align: middle'></div>
               <img class="loading-spinner spinner" src="/static/images/big_loader.gif">
               <img class="loading-spinner search" src="/static/images/search.png">
             </div>

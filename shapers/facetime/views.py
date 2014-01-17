@@ -6,9 +6,23 @@ from session_manager import SessionManager
 from django.core.serializers.json import DjangoJSONEncoder
 import random
 from mongo_helper import ProfilesDao
+import time
 
 global session_manager
 session_manager = SessionManager()
+
+print "SETTING EVENT TIME"
+
+EVENT_START_TIME = int(time.time()*1000) + (1000*60);
+EVENT_DURATION = 1000*60;
+TIME_PER_PERSON = 1000*10;
+
+def getEventInfo():
+	out = {}
+	out['startIn'] = EVENT_START_TIME - int(time.time()*1000)
+	out['eventLength'] = EVENT_DURATION
+	out['timePerPerson'] = TIME_PER_PERSON
+	return out
 
 def verify_supersecret(f):
 	def wrapped(request):
@@ -97,7 +111,7 @@ def login(request):
 	user = request.GET.get("user")
 
 	auth_token = session_manager.login(user)
-	return HttpResponse(json.dumps({'token':auth_token}), content_type="application/json")
+	return HttpResponse(json.dumps({'token':auth_token, 'eventInfo': getEventInfo()}), content_type="application/json")
 
 def video(request):
 	return shortcuts.render_to_response('video.html',{},context_instance=RequestContext(request))

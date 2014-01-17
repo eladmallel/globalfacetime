@@ -7,17 +7,18 @@ var EVENT_INFO_DEFAULTS = {
 var PERSON_TIMER_RESOLUTION = 1000;
 var EVENT_TIMER_RESOLUTION = 1000;
 
-function ChatStateMachine(eventInfo,handleEvent) {
+function ChatStateMachine(handleEvent) {
     var self = this;
 
-    self.eventInfo = $.extend({},EVENT_INFO_DEFAULTS,eventInfo);
     self.handleEvent = handleEvent;
     self.chatting = false;
     self.started = false;
     self.ended = false;
 
     // This sets up the chat event timers
-    self.start = function() {
+    self.start = function(eventInfo) {
+        self.eventInfo = $.extend({},EVENT_INFO_DEFAULTS,eventInfo);
+
         self.initalTime = new Date().getTime();
 
         if (self.eventInfo.startIn > 0) {
@@ -53,7 +54,7 @@ function ChatStateMachine(eventInfo,handleEvent) {
         // Clear previous timeouts
         if ( self.chatting ) {
             self.chatting = false;
-            window.clearTimeout(self.personTickTimeout);
+            window.clearTimeout(self.personTimeout);
             self.handleEvent('chatEnd');
             
         }
