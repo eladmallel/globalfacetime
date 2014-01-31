@@ -189,8 +189,8 @@ MONGO_URL = 'mongodb://ds047438.mongolab.com:47438/globalfacetime'
 CHAT_MAXIMUM_STALENESS_ALLOWED_MILLI = 20000
 
 # Parse database configuration from $DATABASE_URL
-#import dj_database_url
-#DATABASES['default'] =  dj_database_url.config()
+import dj_database_url
+DATABASES['default'] =  dj_database_url.config()
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
