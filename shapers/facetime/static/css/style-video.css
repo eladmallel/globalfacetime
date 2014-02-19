@@ -22,6 +22,36 @@
 
 }
 
+.chat-container {
+
+}
+
+.chat-container.hidden {
+    visibility: hidden;
+}
+
+.pre-chat-container {
+    position: absolute;
+    left: 380px;
+    top: 200px;
+    width: 200px;
+    height: 150px;
+    background-color: white;
+    border: 2px gray solid;
+    border-radius: 4px;
+    text-align: center;
+    padding: 10px;
+    color: black;
+}
+
+.pre-chat-container.hidden {
+    visibility: hidden;
+}
+
+.pre-chat-container .starting-in {
+    color: green;
+}
+
 .videos-section {
 }
 

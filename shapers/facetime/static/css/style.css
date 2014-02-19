@@ -148,6 +148,10 @@ h2{font-size:32px; font-weight:700; color: #b5c7f3;margin-bottom: 10px;}
 
 .main_bg{background: url(../images/world_map_bg.jpg) no-repeat center top #445987; padding-bottom:80px;background-size: cover;}
 
+.main_content {
+	position: relative;
+}
+
 .user_form{ width:480px; margin:0 auto; position:relative;}
 
 .password_page{ padding:90px 0 150px;}

@@ -96,6 +96,8 @@
 
         if ( event === 'eventStartIn') {
           $(".frame-contents").text("You're early! We're starting in "+data);
+          var duration = moment.duration(data, 'milliseconds');
+          $(".js-starting-in").text(duration.minutes() + ":" + duration.seconds());
         }
 
         if ( event === 'eventStart' && typeof(timeLeftInChat) !== 'undefined') {
@@ -103,6 +105,8 @@
         }
 
         if ( event === 'eventStart') {
+          $(".js-pre-chat-container").addClass("hidden");
+          $(".js-chat-container").removeClass("hidden");
           $(".frame-contents").text("Event is a go! Click to start!");
         }
 
@@ -140,8 +144,10 @@
 
                 nextChat();
             },function() {
+                window.stateMachine.startChat();
                 $(".current-video").removeClass('searching-for-partner');
             },function() {
+                window.stateMachine.endChat();
                 nextChat();
             })
           }
@@ -159,42 +165,49 @@
      <link href="/static/css/style-video.css" rel="stylesheet" type="text/css">
 {% endblock %}
 {% block content %}
-<div class="videos-section clearfix">
-    <div class="current-video">
-        <div class="video-frame video-main">
-            <div class='spinner-container'>
-              <div class='vertical-align-hack'></div>
-              <div class='frame-contents' style='display: inline-block; text-align: center; vertical-align: middle'></div>
-              <img class="loading-spinner spinner" src="/static/images/big_loader.gif">
-              <img class="loading-spinner search" src="/static/images/search.png">
-            </div>
-            <div id="mySubscriberDivContainer"></div>
+<div class="chat-container js-chat-container hidden">
+  <div class="videos-section clearfix">
+      <div class="current-video">
+          <div class="video-frame video-main">
+              <div class='spinner-container'>
+                <div class='vertical-align-hack'></div>
+                <div class='frame-contents' style='display: inline-block; text-align: center; vertical-align: middle'></div>
+                <img class="loading-spinner spinner" src="/static/images/big_loader.gif">
+                <img class="loading-spinner search" src="/static/images/search.png">
+              </div>
+              <div id="mySubscriberDivContainer"></div>
 
-            <div class="video-frame video-secondary">
-                <div class='spinner-container'>
-                  <div class='vertical-align-hack'></div>
-                  <img class="loading-spinner" src="/static/images/big_loader.gif">
-                </div>
-                <div id="myPublisherDivContainer"></div>
-            </div>
-        </div>
-    </div>
+              <div class="video-frame video-secondary">
+                  <div class='spinner-container'>
+                    <div class='vertical-align-hack'></div>
+                    <img class="loading-spinner" src="/static/images/big_loader.gif">
+                  </div>
+                  <div id="myPublisherDivContainer"></div>
+              </div>
+          </div>
+      </div>
 
-    <div class="next-video">
-        <div class="video-frame video-next">
-        </div>
-    </div>
+      <div class="next-video">
+          <div class="video-frame video-next">
+          </div>
+      </div>
+  </div>
+
+  <div class="chat-information">
+      <div class="connect-section">
+        <div class="partner-profile-picture"></div>
+        <div class="connect-button js-connect-button"><div class='connect-plus'></div>connect</div>  
+      </div>
+      <div class="next-button" id="next-button"><div class='next-arrows'></div><div class='next-text'>NEXT</div></div>
+      <div class="partner-information">
+          <h4 class="partner-name">Waiting for a peer</h4>
+          <p class="partner-description">Hang on tight...</p>
+      </div>
+  </div>
 </div>
-
-<div class="chat-information">
-    <div class="connect-section">
-      <div class="partner-profile-picture"></div>
-      <div class="connect-button js-connect-button"><div class='connect-plus'></div>connect</div>  
-    </div>
-    <div class="next-button" id="next-button"><div class='next-arrows'></div><div class='next-text'>NEXT</div></div>
-    <div class="partner-information">
-        <h4 class="partner-name">Waiting for a peer</h4>
-        <p class="partner-description">Hang on tight...</p>
-    </div>
+<div class="pre-chat-container js-pre-chat-container" style="width: 200px; margin: 0 auto;">
+  <p>STARTING IN</p>
+  <p class="js-starting-in starting-in"></p>
+  <p>Keep practicing your smile</p>
 </div>
 {% endblock %}
