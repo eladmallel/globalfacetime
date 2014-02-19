@@ -105,6 +105,7 @@
         }
 
         if ( event === 'eventStart') {
+          nextChat();
           $(".js-pre-chat-container").addClass("hidden");
           $(".js-chat-container").removeClass("hidden");
           $(".frame-contents").text("Event is a go! Click to start!");
@@ -140,9 +141,7 @@
             window.stateMachine.start(data.eventInfo);
 
             GlobalFaceTime.chatClient = new ChatClient(data.token,function() {
-                window.chatWindow = new ChatWindow(GlobalFaceTime.user,GlobalFaceTime.chatClient,"#myPublisherDivContainer","#mySubscriberDivContainer");
-
-                nextChat();
+                window.chatWindow = new ChatWindow(GlobalFaceTime.user,GlobalFaceTime.chatClient,"#myPublisherDivContainer","#mySubscriberDivContainer");                
             },function() {
                 window.stateMachine.startChat();
                 $(".current-video").removeClass('searching-for-partner');
