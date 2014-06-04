@@ -15,19 +15,19 @@ class SessionManager(object):
         self._sessions_dao = SessionsDao()
         self._profiles_dao = ProfilesDao()
 
-    def join_or_create_session(self, user):
+    def join_or_create_session(self, user, event_slug):
         print "join_or_create_session"
 
         user_profile = self._profiles_dao.get_by_id(int(user))
 
         while True:
-            peer_id, session_id = self._sessions_dao.try_join_session(user,user_profile)
+            peer_id, session_id = self._sessions_dao.try_join_session(user,user_profile,event_slug)
             if peer_id != user:
                 break # Prevent us from joining ourself
 
         if not peer_id:
             print "creating for user %s"%user
-            session_id = self._sessions_dao.create_session(user)
+            session_id = self._sessions_dao.create_session(user,user_profile,event_slug)
             peer_id = user
         else:
             print "joining user %s to user %s"%(user,peer_id)

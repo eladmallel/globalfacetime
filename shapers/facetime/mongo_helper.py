@@ -34,7 +34,7 @@ class ProfilesDao(object):
 		profile['_id'] = str(profile['_id'])
 		return profile
 
-	def create_new_profile(self, name, email, country, city, interests):
+	def create_new_profile(self, name, email, country, city, interests, event_slug, ip):
 		profile_id = random.randint(0,1<<32)
 
 		avatar_url = calculate_gravatar_url(email)
@@ -48,6 +48,8 @@ class ProfilesDao(object):
 			'interests': interests,
 			'avatar': avatar_url,
 			'seen': {},
+			'event_slug': event_slug,
+			'ip': ip,
 		}
 
 		self._profiles.insert(profile)
@@ -77,43 +79,71 @@ class SessionsDao(object):
 		staleness_threshold = datetime.datetime.utcnow() - datetime.timedelta(milliseconds=settings.CHAT_MAXIMUM_STALENESS_ALLOWED_MILLI)
 		return list(self._sessions.find({'latest_heartbeat': {'$gte': staleness_threshold}}))
 
-	def try_join_session(self,user,profile):
+	def _get_relevant_sessions(self,profile,event_slug):
 		staleness_threshold = datetime.datetime.utcnow() - datetime.timedelta(milliseconds=settings.CHAT_MAXIMUM_STALENESS_ALLOWED_MILLI)
 
 		seen = profile.get('seen',{}).keys()
 
 		query = {
-			'peer_count':1,
-			'looking_to_merge': False,
-			'latest_heartbeat': {'$gte': staleness_threshold},
+			'event_slug': event_slug, # for this event
+			'peer_count': 1, # With only one person
+			'latest_heartbeat': {'$gte': staleness_threshold}, # That isn't stale
+
 		}
 
 		# Make sure nobody I know is in the session
 		for other_id in seen:
 			query['peers.'+other_id] = {'$exists':False}
 
+		return [x for x in self._sessions.find(query)]
+
+	def _try_join_specific_session(self,user_id,profile,session_id):
+		query = {'_id':session_id}
+
 		session = self._sessions.find_and_modify(
 			query=query,
-			update={'$inc':{'peer_count':1,'peers.'+user:1},'$set':{'joined.'+user:datetime.datetime.utcnow()}},
+			update={'$inc':{'peer_count':1,'peers.'+user_id:1},'$set':{'joined.'+user_id:datetime.datetime.utcnow(),'user_profiles.'+user_id:profile}},
 			upsert=False,
 			new=False)
 		if session:
-
 			return session['host'], session['_id']
 
 		return None,None
 
-	def create_session(self, user_id):
+	# TODO: Move to outside of DAO
+	def _prioritize_sessions(self,user_id,profile,sessions):
+		return [x['_id'] for x in sessions]
+
+	def try_join_session(self,user_id,profile,event_slug):
+		relevant_sessions = self._get_relevant_sessions(profile,event_slug)
+
+		if len(relevant_sessions) == 0:
+			return None,None
+
+		prioritized_sessions_ids = self._prioritize_sessions(user_id,profile,relevant_sessions)
+
+		if len(prioritized_sessions_ids) == 0:
+			return None, None
+
+		for session_id in prioritized_sessions_ids:
+			host,joined_id = self._try_join_specific_session(user_id,profile,session_id)
+			if host is not None:
+				return host,joined_id
+
+		return None,None
+
+	def create_session(self, user_id, profile, event_slug):
 		session = {
 			'_id': _generate_session_id(), # Generate a random session id to help randomize session matches
 			'peer_count': 1,
 			'host': user_id,
 			'peers': {user_id:1},
-			'looking_to_merge': False,
+			'user_profiles': {user_id:profile},
 			'date': datetime.datetime.utcnow(),
 			'heartbeats': {},
 			'joined': {user_id: datetime.datetime.utcnow()},
 			'latest_heartbeat': datetime.datetime.utcnow(),
+			'event_slug': event_slug,
 		}
 		self._sessions.insert(session)
 		return session['_id']

@@ -10,10 +10,19 @@ from mongo_helper import ProfilesDao
 import pystmark
 from shapers import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.views.decorators.csrf import csrf_exempt
 import datetime
 
 global session_manager
 session_manager = SessionManager()
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 def getEventInfo(event):
 	out = {}
@@ -57,8 +66,18 @@ def event_login(request,event_slug):
 
 	# Clear the supersecret (So we can login to other events)
 	request.session['supersecret'] = False
-	
+
 	return shortcuts.render_to_response('login.html', c, context_instance=RequestContext(request))
+
+def api_select_event(request,event_slug):
+	# Find the event for the slug
+	try:
+		event = Event.objects.get(slug=event_slug)
+	except ObjectDoesNotExist:
+		return HttpResponse(json.dumps({'success':False,'reason':'not_found'}), content_type="application/json")
+	
+	request.session['event_slug'] = event_slug	
+	return HttpResponse(json.dumps({'success': True}), content_type="application/json")
 
 @verify_event
 def edit_profile(request):
@@ -70,6 +89,28 @@ def edit_profile(request):
 	else:
 		c = {}
 		return shortcuts.render_to_response('password_error.html', c, context_instance=RequestContext(request))
+
+SECRET_API_KEY = 'anyuni123'
+
+# TODO: Validate API requests
+@csrf_exempt
+def api_create_profile(request,event_slug):
+	if request.POST.get('api_key') != SECRET_API_KEY:
+		return HttpResponse(json.dumps({'success':False,'reason':'bad_api_key'}), content_type="application/json")
+
+	profilesDao = ProfilesDao()
+
+	profile_id = profilesDao.create_new_profile(
+		name=request.POST['name'], 
+		email=request.POST['email'],
+		country=request.POST['country'],
+		city=request.POST['city'],
+		interests=request.POST['interests'],
+		event_slug=event_slug,
+		ip=get_client_ip(request))
+
+	return HttpResponse(json.dumps({'success':True,'user_id':profile_id}), content_type="application/json")
+
 
 @verify_supersecret
 @verify_event
@@ -83,7 +124,9 @@ def chat(request):
 			email=request.POST['email'],
 			country=request.POST['country'],
 			city=request.POST['city'],
-			interests=request.POST['interests'])
+			interests=request.POST['interests'],
+			event_slug=request.event.slug,
+			ip=get_client_ip(request))
 	else:
 		profile_id = request.session.get('profile_id', None)
 		if not profile_id:
@@ -94,10 +137,11 @@ def chat(request):
 	}
 	return shortcuts.render_to_response('chat.html', c, context_instance=RequestContext(request))
 
+@verify_event
 def connect(request):
 	global session_manager
 	profile_id = request.GET.get('profile_id')
-	peer_id, session_id = session_manager.join_or_create_session(profile_id)
+	peer_id, session_id = session_manager.join_or_create_session(profile_id,request.event.slug)
 	
 	response_data = {}
 
