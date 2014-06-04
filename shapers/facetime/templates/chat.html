@@ -138,6 +138,7 @@
             user:GlobalFaceTime.user
           },
           success: function(data) {
+            console.log("Got event info",data.eventInfo);
             window.stateMachine.start(data.eventInfo);
 
             GlobalFaceTime.chatClient = new ChatClient(data.token,function() {

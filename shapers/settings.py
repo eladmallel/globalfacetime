@@ -14,12 +14,12 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        # 'ENGINE': 'django.db.backends.sqlite3',
-        # 'NAME': os.path.join(os.path.realpath(os.path.realpath(os.path.dirname(__file__))), 'db.db')
-        'NAME': 'shapers',
-        'USER': 'postgres',
-        'PASSWORD': 'root',
+        #'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(os.path.realpath(os.path.realpath(os.path.dirname(__file__))), 'db.db')
+        #'NAME': 'shapers',
+        #'USER': 'postgres',
+        #'PASSWORD': 'root',
         # 'HOST': 'localhost',
         #'PORT': '',                   # Set to empty string for default.
     }
@@ -50,7 +50,7 @@ USE_I18N = True
 USE_L10N = True
 
 # If you set this to False, Django will not use timezone-aware datetimes.
-USE_TZ = True
+USE_TZ = False
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/var/www/example.com/media/"

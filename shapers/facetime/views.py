@@ -4,25 +4,22 @@ import json
 from django.http import HttpResponse
 from session_manager import SessionManager
 from django.core.serializers.json import DjangoJSONEncoder
+from .models import Event
 import time
 from mongo_helper import ProfilesDao
 import pystmark
 from shapers import settings
+from django.core.exceptions import ObjectDoesNotExist
+import datetime
 
 global session_manager
 session_manager = SessionManager()
 
-print "SETTING EVENT TIME"
-
-EVENT_START_TIME = int(time.time()*1000) + (1000*60);
-EVENT_DURATION = 1000*60;
-TIME_PER_PERSON = 1000*10;
-
-def getEventInfo():
+def getEventInfo(event):
 	out = {}
-	out['startIn'] = EVENT_START_TIME - int(time.time()*1000)
-	out['eventLength'] = EVENT_DURATION
-	out['timePerPerson'] = TIME_PER_PERSON
+	out['startIn'] = (event.start_utc - datetime.datetime.utcnow()).total_seconds()*1000
+	out['eventLength'] = (event.end_utc - event.start_utc).total_seconds()*1000
+	out['timePerPerson'] = event.time_per_user_session_minutes * 60 * 1000
 	return out
 
 def verify_supersecret(f):
@@ -30,12 +27,36 @@ def verify_supersecret(f):
 		if not request.session.get('supersecret', False):
 			return shortcuts.redirect('/')
 		return f(request)
-	return wrapped						
+	return wrapped
+
+def verify_event(f):
+	def wrapped(request):
+		if not request.session.get('event_slug', False):
+			return shortcuts.redirect('/')
+
+		try:
+			event = Event.objects.get(slug=request.session['event_slug'])
+		except ObjectDoesNotExist:
+			print "AT VERIFY EVENT"
+			return shortcuts.render_to_response('event_doesnt_exist.html', c, context_instance=RequestContext(request))
+		
+		request.event = event	
+
+		return f(request)
+	return wrapped	
 
 
-def index(request):
+def event_login(request,event_slug):
 	c = {}
-	return shortcuts.render_to_response('index.html', c, context_instance=RequestContext(request))
+	# Find the event for the slug
+	try:
+		event = Event.objects.get(slug=event_slug)
+	except ObjectDoesNotExist:
+		print "AT EVENT LOGIN"
+		return shortcuts.render_to_response('event_doesnt_exist.html', c, context_instance=RequestContext(request))
+
+	request.session['event_slug'] = event_slug
+	return shortcuts.render_to_response('login.html', c, context_instance=RequestContext(request))
 
 def edit_profile(request):
 	password = request.POST.get('password')
@@ -48,6 +69,7 @@ def edit_profile(request):
 		return shortcuts.render_to_response('password_error.html', c, context_instance=RequestContext(request))
 
 @verify_supersecret
+@verify_event
 def chat(request):
 	profile_id = None
 	if request.POST.get('name'):
@@ -107,12 +129,13 @@ def heartbeat(request):
 		),
 		content_type="application/json")
 
+@verify_event
 def login(request):
 	global session_manager
 	user = request.GET.get("user")
 
 	auth_token = session_manager.login(user)
-	return HttpResponse(json.dumps({'token':auth_token, 'eventInfo': getEventInfo()}), content_type="application/json")
+	return HttpResponse(json.dumps({'token':auth_token, 'eventInfo': getEventInfo(request.event)}), content_type="application/json")
 
 def video(request):
 	return shortcuts.render_to_response('video.html',{},context_instance=RequestContext(request))

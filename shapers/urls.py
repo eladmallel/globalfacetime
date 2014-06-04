@@ -6,7 +6,6 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     # Examples:
-    url(r'^$', 'shapers.facetime.views.index'),
     url(r'^profile$', 'shapers.facetime.views.edit_profile'),
     url(r'^chat$', 'shapers.facetime.views.chat'),
     url(r'^connect$', 'shapers.facetime.views.connect'),
@@ -17,6 +16,11 @@ urlpatterns = patterns('',
     url(r'^about_you$', 'shapers.facetime.views.about_you'),
     url(r'^password$', 'shapers.facetime.views.password'),
     url(r'^sharecontact$', 'shapers.facetime.views.share_contact'),
+
+    # TODO: This is bad practice because now the routes above us are basically "reserved event names"
+    # TODO: Needs to refactor by moving all API calls to /api/v1/
+    # TODO: Needs to refactor by moving all user http calls to /<event slug>/url
+    url(r'^(?P<event_slug>\w+)$', 'shapers.facetime.views.event_login'),
     # url(r'^shapers/', include('shapers.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:

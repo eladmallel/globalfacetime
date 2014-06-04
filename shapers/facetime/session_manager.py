@@ -18,8 +18,10 @@ class SessionManager(object):
     def join_or_create_session(self, user):
         print "join_or_create_session"
 
+        user_profile = self._profiles_dao.get_by_id(int(user))
+
         while True:
-            peer_id, session_id = self._sessions_dao.try_join_session(user)
+            peer_id, session_id = self._sessions_dao.try_join_session(user,user_profile)
             if peer_id != user:
                 break # Prevent us from joining ourself
 
@@ -34,7 +36,12 @@ class SessionManager(object):
 
     def heartbeat(self,session_id,user):
         print "hearbeat: %s - %s"%(user,session_id)
-        now, heartbeats = self._sessions_dao.heartbeat(session_id,user)
+        now, heartbeats, seen = self._sessions_dao.heartbeat(session_id,user)
+
+        print "SEENS",seen
+        if len(seen) > 0:
+            self._profiles_dao.add_seen_users(user,seen)
+
         profile_ids = heartbeats.keys()
         profiles = dict()
         for profile_id in profile_ids:

@@ -5,6 +5,8 @@ import os
 import random
 import urllib, hashlib
 
+SECONDS_TILL_CONSIDERED_SEEN = 10
+
 client = MongoClient(settings.MONGO_URL)
 client.globalfacetime.authenticate(settings.MONGO_USERNAME, settings.MONGO_PASSWORD)
 db = client.globalfacetime
@@ -44,11 +46,25 @@ class ProfilesDao(object):
 			'country': country,
 			'city': city,
 			'interests': interests,
-			'avatar': avatar_url
+			'avatar': avatar_url,
+			'seen': {},
 		}
 
 		self._profiles.insert(profile)
 		return profile_id
+
+	def add_seen_users(self,profile_id,seen):
+		to_add = {}
+		for u in seen:
+			to_add['seen.'+u] = 1
+
+		print "ADDSEEN",to_add,profile_id
+
+		self._profiles.find_and_modify(
+			query={'profile_id':int(profile_id)},
+			update={'$inc':to_add}, # TODO: Can't use $set due to bug in MongoDB (Change when its fixed)
+			upsert=False,
+			new=False)
 
 class SessionsDao(object):
 	def __init__(self):
@@ -61,12 +77,24 @@ class SessionsDao(object):
 		staleness_threshold = datetime.datetime.utcnow() - datetime.timedelta(milliseconds=settings.CHAT_MAXIMUM_STALENESS_ALLOWED_MILLI)
 		return list(self._sessions.find({'latest_heartbeat': {'$gte': staleness_threshold}}))
 
-	def try_join_session(self,user):
+	def try_join_session(self,user,profile):
 		staleness_threshold = datetime.datetime.utcnow() - datetime.timedelta(milliseconds=settings.CHAT_MAXIMUM_STALENESS_ALLOWED_MILLI)
 
+		seen = profile.get('seen',{}).keys()
+
+		query = {
+			'peer_count':1,
+			'looking_to_merge': False,
+			'latest_heartbeat': {'$gte': staleness_threshold},
+		}
+
+		# Make sure nobody I know is in the session
+		for other_id in seen:
+			query['peers.'+other_id] = {'$exists':False}
+
 		session = self._sessions.find_and_modify(
-			query={'peer_count':1, 'looking_to_merge': False, 'latest_heartbeat': {'$gte': staleness_threshold}},
-			update={'$inc':{'peer_count':1,'peers.'+user:1}},
+			query=query,
+			update={'$inc':{'peer_count':1,'peers.'+user:1},'$set':{'joined.'+user:datetime.datetime.utcnow()}},
 			upsert=False,
 			new=False)
 		if session:
@@ -84,6 +112,7 @@ class SessionsDao(object):
 			'looking_to_merge': False,
 			'date': datetime.datetime.utcnow(),
 			'heartbeats': {},
+			'joined': {user_id: datetime.datetime.utcnow()},
 			'latest_heartbeat': datetime.datetime.utcnow(),
 		}
 		self._sessions.insert(session)
@@ -97,4 +126,17 @@ class SessionsDao(object):
 			upsert=False,
 			new=True)
 
-		return now,session["heartbeats"]
+		# Now if we've been enough time together, mark us seen to eachother
+		# TODO: Might cause a performance issue with multiple updates on each heartbeat
+
+		seen = []
+		for uid,joined in session.get('joined',{}).items():
+			if uid == user:
+				continue
+
+			print "SEEN",uid,joined,now,(now-joined).total_seconds()
+
+			if (now - joined).total_seconds() >= SECONDS_TILL_CONSIDERED_SEEN:
+				seen.append(uid)
+
+		return now,session["heartbeats"],seen
