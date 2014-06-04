@@ -76,6 +76,8 @@ class HeartbeatThread(threading.Thread):
 				event_slug,user_id,session_id = info
 				callback(self._session.heartbeat(event_slug,user_id,session_id))
 
+			time.sleep(HEARBEAT_TIME)
+
 	def add_heartbeat(self,event_slug,user_id,session_id,callback):
 		with self._lock:
 			self._heartbeat_for[(event_slug,user_id,session_id)] = callback
