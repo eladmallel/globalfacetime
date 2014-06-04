@@ -53,7 +53,7 @@
         if ( typeof(timeLeftInEvent) !== 'undefined' && typeof(timeLeftInChat) !== 'undefined') {
           if ( timeLeftInEvent < timeLeftInChat ) {
             if ( !showingLastChat ) {
-              lastChatNotif = $.gritter.add({title: "Last chat!", text: "This is your last chat!", class_name: 'last-chat-notification', sticky: true});
+              lastChatNotif = $.gritter.add({title: "Last chat!", text: "This is your last chat before the event ends!", class_name: 'last-chat-notification', sticky: true});
               showingLastChat = true;
             }
           }
@@ -65,6 +65,8 @@
           if ( showingLastChat ) {
             $.gritter.remove(lastChatNotif);
           }
+          
+          endPending = true; // Will cause event to end once you're done chatting
         }
 
         if ( event === 'chatInProgress' ) {
@@ -87,21 +89,13 @@
         }
 
         if ( event === 'eventEarly' ) {
-          $(".frame-contents").text("You're early! We're starting in "+data);
-        }
-
-        if ( event === 'eventLate' ) {
-          $(".frame-contents").text("You're late! Go go go!");
+          // This is the defualt state
+          // TODO: Make it so the default state is NONE and we set the text in here
         }
 
         if ( event === 'eventStartIn') {
-          $(".frame-contents").text("You're early! We're starting in "+data);
           var duration = moment.duration(data, 'milliseconds');
           $(".js-starting-in").text(duration.minutes() + ":" + duration.seconds());
-        }
-
-        if ( event === 'eventStart' && typeof(timeLeftInChat) !== 'undefined') {
-          $.gritter.add({title: "Event is starting!", text: "Yay!"});
         }
 
         if ( event === 'eventStart') {
@@ -111,13 +105,22 @@
           $(".frame-contents").text("Event is a go! Click to start!");
         }
 
-        if ( event === 'eventEnd' ) {
-          $.gritter.add({title: "Event is over!", text: "Yay!"});
-          endPending = true;
+        if ( event === 'eventLate') {
+          $(".js-pre-chat-container").addClass("hidden");
+          $(".js-chat-container").removeClass("hidden");
+          $(".frame-contents").text("Event has already started! Go go go!");
+        }
+
+        if ( event === 'eventAlreadyDone') {
+          var duration = moment.duration(data, 'milliseconds');
+          $(".js-pre-chat-container").html("<p>EVENT IS OVER</p><p>It ended "+duration.humanize(true)+"</p>");
         }
 
         if ( endPending && typeof(timeLeftInChat) === 'undefined') {
-          $(".frame-contents").text("Event is over! Goodbye!");
+          $(".js-pre-chat-container").removeClass("hidden");
+          $(".js-chat-container").addClass("hidden");
+          var duration = moment.duration(data, 'milliseconds');
+          $(".js-pre-chat-container").html("<p>EVENT IS OVER</p><p>It ended "+duration.humanize(true)+"</p>");
           endPending = false;
         }
      }
