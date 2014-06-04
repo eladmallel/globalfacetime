@@ -37,7 +37,6 @@ def verify_event(f):
 		try:
 			event = Event.objects.get(slug=request.session['event_slug'])
 		except ObjectDoesNotExist:
-			print "AT VERIFY EVENT"
 			return shortcuts.render_to_response('event_doesnt_exist.html', c, context_instance=RequestContext(request))
 		
 		request.event = event	
@@ -52,15 +51,19 @@ def event_login(request,event_slug):
 	try:
 		event = Event.objects.get(slug=event_slug)
 	except ObjectDoesNotExist:
-		print "AT EVENT LOGIN"
 		return shortcuts.render_to_response('event_doesnt_exist.html', c, context_instance=RequestContext(request))
 
 	request.session['event_slug'] = event_slug
+
+	# Clear the supersecret (So we can login to other events)
+	request.session['supersecret'] = False
+	
 	return shortcuts.render_to_response('login.html', c, context_instance=RequestContext(request))
 
+@verify_event
 def edit_profile(request):
 	password = request.POST.get('password')
-	if password == 'raphael' or request.session.get('supersecret') == True:
+	if password == request.event.password or request.session.get('supersecret') == True:
 		request.session['supersecret'] = True
 		c = {}
 		return shortcuts.render_to_response('about_you.html', c, context_instance=RequestContext(request))
