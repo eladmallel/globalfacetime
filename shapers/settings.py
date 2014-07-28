@@ -14,14 +14,14 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        #'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(os.path.realpath(os.path.realpath(os.path.dirname(__file__))), 'db.db')
-        #'NAME': 'shapers',
-        #'USER': 'postgres',
-        #'PASSWORD': 'root',
-        # 'HOST': 'localhost',
-        #'PORT': '',                   # Set to empty string for default.
+        'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        #'ENGINE': 'django.db.backends.sqlite3',
+        #'NAME': os.path.join(os.path.realpath(os.path.realpath(os.path.dirname(__file__))), 'db.db')
+        'NAME': 'shapers',
+        'USER': 'postgres',
+        'PASSWORD': 'root',
+        'HOST': 'localhost',
+        'PORT': '',                   # Set to empty string for default.
     }
 }
 
