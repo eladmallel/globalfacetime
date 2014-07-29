@@ -135,7 +135,6 @@ def chat(request):
         # you did POST - need to create your profile and load page
         profilesDao = ProfilesDao()
 
-<<<<<<< HEAD
         client_ip = get_client_ip(request)
 
         # Get geoip info
@@ -147,8 +146,6 @@ def chat(request):
             # TODO: Log a bad response code somewhere
             geoip_info = None
 
-=======
->>>>>>> better identify on server
         profile_id = profilesDao.create_new_profile(
             name=request.POST['name'],
             email=request.POST['email'],
