@@ -156,14 +156,19 @@ def chat(request):
             ip=client_ip,
             geoip_info=geoip_info)
 
-        # TODO Add identity properties
-        analytics.identify(request.POST['email'])
+        analytics.identify(request.POST['email'], {
+        		'name': request.POST['name'],
+        		'city': request.POST['city'],
+        		'interests': request.POST['interests'],
+        		'eventSlug': request.event.slug,
+        		'ip': get_client_ip(request)
+        	})
 
         analytics.track(request.POST['email'],
-            "Joined event", {
-            "eventSlug" : request.event.slug,
-            "country" : request.POST['country'],
-            "ip" : get_client_ip(request)
+            'Joined event', {
+            'eventSlug' : request.event.slug,
+            'country' : request.POST['country'],
+            'ip' : get_client_ip(request)
             })
 
     else:

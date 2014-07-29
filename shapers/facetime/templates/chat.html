@@ -89,12 +89,14 @@
         }
 
         if ( event === 'chatInProgress' ) {
+          var timeLeftSeconds = Math.round(data / 1000);
+          var message = "This chat will end in " + timeLeftSeconds + " seconds";
           if ( data <= END_CHAT_NOTIFY_PERIOD ) {
             if ( !showingEndChat ) {
-              chatEndNotif = $.gritter.add({title: "Time's almost up!", text: "You chat will end in "+data, class_name: 'end-chat-notification', sticky: true});
+              chatEndNotif = $.gritter.add({title: "Time's almost up!", text: message, class_name: 'end-chat-notification', sticky: true});
               showingEndChat = true;
             } else {
-              $(".end-chat-notification p").text("You chat will end in "+data);
+              $(".end-chat-notification p").text(message);
             }
           }
         }
@@ -105,6 +107,10 @@
             $.gritter.remove(chatEndNotif);
           }
           timeLeftInChat = undefined;
+          window.chatWindow.disconnect();
+          $(".frame-contents").text("Looking for your next chat partner...");
+          $(".partner-name").text("Waiting for a peer");
+          $(".partner-description").text("Hang on tight...");
         }
 
         if ( event === 'eventEarly' ) {
@@ -127,7 +133,7 @@
           nextChat();
           $(".js-pre-chat-container").addClass("hidden");
           $(".js-chat-container").removeClass("hidden");
-          $(".frame-contents").text("Event has already started! Go go go!");
+          $(".frame-contents").text("Looking for your next chat partner...");
         }
 
         if ( event === 'eventAlreadyDone') {
@@ -178,6 +184,7 @@
 
         $("#next-button").click(function() {
            window.chatWindow.disconnect();
+           window.analytics.track("Chat Skipped");
         });
 
         var chosenLogo = logoNames[Math.floor(Math.random() * logoNames.length)];   

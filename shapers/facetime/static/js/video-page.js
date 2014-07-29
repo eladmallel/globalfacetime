@@ -424,12 +424,16 @@ ChatWindow = (function() {
   ChatWindow.prototype._processProfiles = function(my_profile_id, profiles) {
     for (var profile_id in profiles) {
       if (profile_id != my_profile_id) {
+        
         var profile = profiles[profile_id];
+
         $('.partner-name').text(profile.name);
         $('.partner-description').text(profile.interests);
         $('.partner-profile-picture').removeClass('default');
         $('.partner-profile-picture').css('background-image', 'url(' + profile.avatar + ')');
-      }
+
+        this.partner = profile;
+      } 
     }
   }
 
@@ -480,6 +484,10 @@ function ConnectButtonHandler($button) {
 
   $button.on('click', function () {
     $.gritter.add({title: "Connecting...", text: "This might take a few seconds."});
+
+    window.analytics.track("Connect Clicked", {
+        'connectTo': window.chatWindow.partner.email
+    });
 
     $.ajax({
         method: "GET",

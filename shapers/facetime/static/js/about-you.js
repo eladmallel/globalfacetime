@@ -1,6 +1,12 @@
 function AboutYou($form) {
 	var self = this;
 
+	$form.submit(function(e) {
+		var email = $form.find(".js-form-email").val();
+		console.log("identifying this user as " + email);
+		window.analytics.identify(email);
+	});
+
 	$form.validate({
 		errorElement: 'div',
 		rules: {

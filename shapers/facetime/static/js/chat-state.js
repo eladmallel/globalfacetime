@@ -101,8 +101,11 @@ function ChatStateMachine(handleEvent) {
         var sinceChat = currTime - self.personStartTime;
         var tillEnd =  self.eventInfo.timePerPerson - sinceChat;
 
+        console.log("time till the end of this chat: " + tillEnd);
+
         if ( tillEnd <= 0) {
             self.chatting = false;
+            window.analytics.track("Chat Auto Skipped");
             self.handleEvent('chatEnd');
         } else {
             self.handleEvent('chatInProgress',tillEnd);
