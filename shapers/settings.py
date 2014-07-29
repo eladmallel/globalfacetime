@@ -173,9 +173,12 @@ OPENTOK_API_SECRET = 'f746803b8ce65f45a6d817cdfc39757d3bf0588c'
 VLINE_SERVICE_ID = 'chatsummit2'
 VLINE_API_SECRET = '1mBiit2PEcRXhwCgr3gMIlWpZpIQq6rcNH580QMGHy8'
 
-MONGO_USERNAME = 'globalfacetime'
-MONGO_PASSWORD = 'RHE6uMRpgRysSq'
-MONGO_URL = 'mongodb://ds047438.mongolab.com:47438/globalfacetime'
+#MONGO_USERNAME = 'globalfacetime'
+#MONGO_PASSWORD = 'RHE6uMRpgRysSq'
+#MONGO_URL = 'mongodb://ds047438.mongolab.com:47438/globalfacetime'
+MONGO_USERNAME = None
+MONGO_PASSWORD = None
+MONGO_URL = 'mongodb://localhost:27017/globalfacetime'
 
 CHAT_MAXIMUM_STALENESS_ALLOWED_MILLI = 20000
 

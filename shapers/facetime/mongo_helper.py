@@ -6,9 +6,13 @@ import random
 import urllib, hashlib
 
 SECONDS_TILL_CONSIDERED_SEEN = 10
+#SECONDS_TILL_CONSIDERED_SEEN = 1
 
 client = MongoClient(settings.MONGO_URL)
-client.globalfacetime.authenticate(settings.MONGO_USERNAME, settings.MONGO_PASSWORD)
+
+if settings.MONGO_USERNAME is not None:
+    client.globalfacetime.authenticate(settings.MONGO_USERNAME, settings.MONGO_PASSWORD)
+
 db = client.globalfacetime
 
 CONFLICTS_BY_COUNTRY = {
