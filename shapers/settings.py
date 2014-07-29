@@ -179,20 +179,8 @@ CHAT_MAXIMUM_STALENESS_ALLOWED_MILLI = 20000
 # Parse database configuration from $DATABASE_URL
 import dj_database_url
 DATABASES = {}
-DATABASES['default'] =  dj_database_url.config()
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        #'ENGINE': 'django.db.backends.sqlite3',
-        #'NAME': os.path.join(os.path.realpath(os.path.realpath(os.path.dirname(__file__))), 'db.db'),
-        'NAME': 'shapers',
-        'USER': 'postgres',
-        'PASSWORD': 'root',
-        'HOST': 'localhost',
-        'PORT': '',                   # Set to empty string for default.
-    }
-}
+DATABASES['default'] =  dj_database_url.config(default="sqlite:///" + 
+    os.path.join(os.path.realpath(os.path.realpath(os.path.dirname(__file__))), 'db.db'))
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
