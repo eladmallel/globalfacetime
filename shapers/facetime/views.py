@@ -12,8 +12,11 @@ from shapers import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.csrf import csrf_exempt
 import datetime
+import analytics
 
 global session_manager
+analytics.init("9mh6pdkn3t")
+
 session_manager = SessionManager()
 
 def get_client_ip(request):
@@ -127,6 +130,17 @@ def chat(request):
 			interests=request.POST['interests'],
 			event_slug=request.event.slug,
 			ip=get_client_ip(request))
+
+		# TODO Add identity properties
+		analytics.identify(request.POST['email'])
+
+		analytics.track(request.POST['email'], 
+			"Joined event", {
+			"eventSlug" : request.event.slug,
+			"country" : request.POST['country'],
+			"ip" : get_client_ip(request)
+			})
+
 	else:
 		profile_id = request.session.get('profile_id', None)
 		if not profile_id:

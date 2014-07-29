@@ -42,6 +42,10 @@
      function handleEvent(event,data) {
         console.log(event + " " + data);
 
+        if ( event === 'chatStart' ) { 
+          window.analytics.track("Chat Started");
+        }
+
         if ( event === 'chatStart' || event === 'chatInProgress') {
           timeLeftInChat = data;
         }
