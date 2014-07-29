@@ -178,6 +178,7 @@
 
         $("#next-button").click(function() {
            window.chatWindow.disconnect();
+           window.analytics.track("Chat Skipped");
         });
 
         var chosenLogo = logoNames[Math.floor(Math.random() * logoNames.length)];   
