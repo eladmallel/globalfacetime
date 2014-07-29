@@ -3,7 +3,7 @@
 // Sessions and tokens are generated on your server and passed down to the client
 var apiKey = "41805792";
 
-var SERVICE_ID = 'chatsummit';
+var SERVICE_ID = 'chatsummit2';
 
 GlobalFaceTime = {}
 GlobalFaceTime.user = "" + profile_id;
