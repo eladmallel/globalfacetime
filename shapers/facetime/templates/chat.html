@@ -89,12 +89,14 @@
         }
 
         if ( event === 'chatInProgress' ) {
+          var timeLeftSeconds = Math.round(data / 1000);
+          var message = "This chat will end in " + timeLeftSeconds + " seconds";
           if ( data <= END_CHAT_NOTIFY_PERIOD ) {
             if ( !showingEndChat ) {
-              chatEndNotif = $.gritter.add({title: "Time's almost up!", text: "You chat will end in "+data, class_name: 'end-chat-notification', sticky: true});
+              chatEndNotif = $.gritter.add({title: "Time's almost up!", text: message, class_name: 'end-chat-notification', sticky: true});
               showingEndChat = true;
             } else {
-              $(".end-chat-notification p").text("You chat will end in "+data);
+              $(".end-chat-notification p").text(message);
             }
           }
         }
