@@ -108,8 +108,7 @@
         }
 
         if ( event === 'eventEarly' ) {
-          // This is the defualt state
-          // TODO: Make it so the default state is NONE and we set the text in here
+          $(".js-pre-chat-container").html('<p>STARTING IN</p><p class="js-starting-in starting-in"></p><p>Keep practicing your smile</p>');
         }
 
         if ( event === 'eventStartIn') {
@@ -230,8 +229,6 @@
   </div>
 </div>
 <div class="pre-chat-container js-pre-chat-container" style="width: 200px; margin: 0 auto;">
-  <p>STARTING IN</p>
-  <p class="js-starting-in starting-in"></p>
-  <p>Keep practicing your smile</p>
+  <p>Initializing...</p>
 </div>
 {% endblock %}

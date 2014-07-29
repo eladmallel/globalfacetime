@@ -13,6 +13,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.csrf import csrf_exempt
 import datetime
 import analytics
+import requests
 
 global session_manager
 analytics.init("9mh6pdkn3t")
@@ -103,6 +104,16 @@ def api_create_profile(request,event_slug):
 
     profilesDao = ProfilesDao()
 
+    client_ip = request.POST.get('ip', get_client_ip(request))
+
+    geoip_info_response = requests.get('http://freegeoip.net/json/%s'%client_ip)
+
+    if geoip_info_response.status_code == 200:
+        geoip_info = geoip_info_response.json()
+    else:
+        # TODO: Log a bad response code somewhere
+        geoip_info = None
+
     profile_id = profilesDao.create_new_profile(
         name=request.POST['name'],
         email=request.POST['email'],
@@ -110,7 +121,8 @@ def api_create_profile(request,event_slug):
         city=request.POST['city'],
         interests=request.POST['interests'],
         event_slug=event_slug,
-        ip=get_client_ip(request))
+        ip=client_ip,
+        geoip_info=geoip_info)
 
     return HttpResponse(json.dumps({'success':True,'user_id':profile_id}), content_type="application/json")
 
@@ -122,6 +134,18 @@ def chat(request):
     if request.POST.get('name'):
         # you did POST - need to create your profile and load page
         profilesDao = ProfilesDao()
+
+        client_ip = get_client_ip(request)
+
+        # Get geoip info
+        geoip_info_response = requests.get('http://freegeoip.net/json/%s'%client_ip)
+
+        if geoip_info_response.status_code == 200:
+            geoip_info = geoip_info_response.json()
+        else:
+            # TODO: Log a bad response code somewhere
+            geoip_info = None
+
         profile_id = profilesDao.create_new_profile(
             name=request.POST['name'],
             email=request.POST['email'],
@@ -129,7 +153,8 @@ def chat(request):
             city=request.POST['city'],
             interests=request.POST['interests'],
             event_slug=request.event.slug,
-            ip=get_client_ip(request))
+            ip=client_ip,
+            geoip_info=geoip_info)
 
         # TODO Add identity properties
         analytics.identify(request.POST['email'])
