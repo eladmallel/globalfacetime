@@ -22,7 +22,7 @@ urlpatterns = patterns('',
     # TODO: This is bad practice because now the routes above us are basically "reserved event names"
     # TODO: Needs to refactor by moving all API calls to /api/v1/
     # TODO: Needs to refactor by moving all user http calls to /<event slug>/url
-    url(r'^(?P<event_slug>\w+)$', 'shapers.facetime.views.event_login'),
+    url(r'^join/(?P<event_slug>\w+)$', 'shapers.facetime.views.event_login'),
     # url(r'^shapers/', include('shapers.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
