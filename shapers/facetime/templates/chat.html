@@ -21,13 +21,28 @@
         "Club 84",
      ]
 
-     function nextChat() {
-        $(".current-video").addClass('searching-for-partner');
-        window.chatWindow.disconnect();
+     var isChatReady = false;
+     var pendingNext = false;
 
-        window.setTimeout(function() {
-            window.chatWindow.connect();
-        },5000);
+     function nextChat() {
+        if ( isChatReady )  {
+            pendingNext = false;
+            $(".current-video").addClass('searching-for-partner');
+            window.chatWindow.disconnect();
+
+            window.setTimeout(function() {
+                window.chatWindow.connect();
+            },5000);
+        } else {
+            pendingNext = true;
+        }
+     }
+
+     function chatReady() {
+         if ( pendingNext ) {
+             isChatReady = true;
+             nextChat();
+         }
      }
 
      var END_CHAT_NOTIFY_PERIOD = 1000*60;
@@ -110,6 +125,7 @@
         }
 
         if ( event === 'eventLate') {
+          nextChat();
           $(".js-pre-chat-container").addClass("hidden");
           $(".js-chat-container").removeClass("hidden");
           $(".frame-contents").text("Event has already started! Go go go!");
@@ -149,7 +165,8 @@
             window.stateMachine.start(data.eventInfo);
 
             GlobalFaceTime.chatClient = new ChatClient(data.token,function() {
-                window.chatWindow = new ChatWindow(GlobalFaceTime.user,GlobalFaceTime.chatClient,"#myPublisherDivContainer","#mySubscriberDivContainer");                
+                window.chatWindow = new ChatWindow(GlobalFaceTime.user,GlobalFaceTime.chatClient,"#myPublisherDivContainer","#mySubscriberDivContainer");
+                chatReady();
             },function() {
                 window.stateMachine.startChat();
                 $(".current-video").removeClass('searching-for-partner');
