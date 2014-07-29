@@ -105,6 +105,7 @@
             $.gritter.remove(chatEndNotif);
           }
           timeLeftInChat = undefined;
+          window.chatWindow.disconnect();
         }
 
         if ( event === 'eventEarly' ) {
