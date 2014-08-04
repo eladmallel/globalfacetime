@@ -313,8 +313,10 @@ ChatWindow = (function() {
           user:this.user
         },
         success: function(data) {
-          self._processHeartbeats(data.now, data.heartbeats, self.sessionId);
-          self._processProfiles(self.user, data.profiles);
+            if ( self.inSession ) {
+                self._processHeartbeats(data.now, data.heartbeats, self.sessionId);
+                self._processProfiles(self.user, data.profiles);
+            }
         }
       });
     }
