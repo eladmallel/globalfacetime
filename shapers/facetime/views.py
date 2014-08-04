@@ -303,3 +303,7 @@ Just reply to this thread or email %s to get in touch.
 
 ChatSummit,
 On behalf of %s''' % (to_name, from_name, from_email, from_name)
+
+
+def newdemo(request):
+    return shortcuts.render_to_response('newdemo.html',{},context_instance=RequestContext(request))
