@@ -122,11 +122,11 @@ class SessionsDao(object):
         return [x for x in self._sessions.find(query)]
 
     def _try_join_specific_session(self,user_id,profile,session_id):
-        query = {'_id':session_id}
+        query = {'_id':session_id, 'peer_count': 1}
 
         session = self._sessions.find_and_modify(
             query=query,
-            update={'$inc':{'peer_count':1,'peers.'+user_id:1},'$set':{'joined.'+user_id:datetime.datetime.utcnow(),'user_profiles.'+user_id:profile}},
+            update={'$inc':{'peer_count': 1, 'peers.'+user_id: 1},'$set':{'joined.'+user_id:datetime.datetime.utcnow(),'user_profiles.'+user_id:profile}},
             upsert=False,
             new=False)
         if session:

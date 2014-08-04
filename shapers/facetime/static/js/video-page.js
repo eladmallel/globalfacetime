@@ -26,49 +26,66 @@ ChatClient = (function() {
     this.$localContainer = $("<div style='display: none;' id='"+TEMPORARY_LOCAL_CONTAINER_ID+"'></div>").appendTo($("body"));
     this.$remoteContainer = $("<div style='display: none;' id='"+TEMPORARY_REMOTE_CONTAINER_ID+"'></div>").appendTo($("body"));
 
-    this.authKey = authKey;
     this.disconnectCb = disconnectCb;
     this.connectCb = connectCb;
+    this.readyCb = readyCb;
 
-    this.client = vline.Client.create({
-      serviceId: window.SERVICE_ID
+    // Connect to XirSys
+    console.log("Connecting to XirSys...");
+
+    this.peerConnectionConfig = null;
+    this.webrtc = null;
+    var self=this;
+    $.ajax({
+        type: "POST",
+        dataType: "json",
+        url: "https://api.xirsys.com/getIceServers",
+        data: {
+            ident: "hochbergg",
+            secret: "20313345-b51a-4a06-96dd-6f4d126c1848",
+            domain: "chatsummit.herokuapp.com",
+            application: "default",
+            room: 'default',
+            secure: 1
+        },
+        success: function (data, status) {
+            // data.d is where the iceServers object lives
+            self.peerConnectionConfig = data.d;
+
+            self._initializeWebRTC();
+        },
+        async: false
+    });
+  }
+
+  ChatClient.prototype._initializeWebRTC = function() {
+    this.webrtc = new SimpleWebRTC({
+        url: 'http://summitsignal.herokuapp.com:80',
+        // the id/element dom element that will hold "our" video
+        localVideoEl: this.$localContainer[0],
+        // the id/element dom element that will hold remote videos
+//        remoteVideosEl: this.$remoteContainer[0],
+        // immediately ask for camera access
+        autoRequestMedia: true,
+        // Give peerConnectionConfig
+        peerConnectionConfig: this.peerConnectionConfig
     });
 
-    // Handle a new incoming connection
-    this.client.on('add:mediaSession', function(event) { this._onMediaSession(event.target); }, this);
+    var self=this;
+    this.webrtc.on('videoAdded', function(video) {
+        self._onVideoAdded(video);
+    });
 
-    // Show the local stream
-    this.client.getLocalStream().done(function(mediaStream) {
-      console.log("GOT LOCAL STREAM");
+    this.webrtc.on('videoRemoved', function() {
+        self._onVideoRemoved();
+    })
 
-      if (mediaStream === this.localStream) {
-        return;
-      }
-
-      if (typeof(this.localStream) !== 'undefined') {
-        console.log("GOT DOUBLE LOCAL STREAM!");
-
-        this.localStream.stop();
-        this.$localContainer.empty();
-      }
-
-      this.localStream = mediaStream;
-      this.localStreamElement = mediaStream.createVideoElement();
-      this.localStreamElement.id = LOCAL_STREAM_ID;
-      this._registerVideoResize(this.localStreamElement);
-      this.$localContainer.append(this.localStreamElement);
-
-      this._unpauseAndResize();
-    },this);
-
-    // Connect to vline
-    console.log("Connecting to vline...");
-    this.client.login(window.SERVICE_ID, {}, this.authKey).done(function(session) {
-      this.vlineSession = session;
-
-      readyCb();
-    }, this);
-  }
+    // we have to wait until it's ready
+    this.webrtc.on('readyToCall', function () {
+        self._unpauseAndResize();
+        self.readyCb();
+    });
+}
 
   ChatClient.prototype._switchContainers = function(newLocalContainer,newRemoteContainer) {
     //console.log("CP: Switching containers to "+newLocalContainer+", "+newRemoteContainer);
@@ -135,215 +152,59 @@ ChatClient = (function() {
     doContainer(this.$remoteContainer);
   }
 
-  ChatClient.prototype._onMediaSession = function(mediaSession) {
-    if (mediaSession === this.mediaSession) {
-      return;
-    }
+  ChatClient.prototype._onVideoAdded = function(video) {
+    console.log("videoAdded");
 
-    console.log("Got a media session! No longer searching for a partner :)");
+    this._registerVideoResize(video);
+    this.$remoteContainer.append(video);
+    this._unpauseAndResize();
+
     this.connectCb();
+  }
 
-    if ( typeof(this.mediaSession) !== 'undefined') {
-      this.mediaSession.stop();
-    }
-
-    this.mediaSession = mediaSession;
-
-    var mySessionId = this.sessionId; // To prevent from old events interfering with us
-
-    mediaSession.
-    on('enterState:pending', function() {
-      //console.log('Sessions ' + this.sessionId + ' entering pending state...');
-
-      if (this.sessionId !== mySessionId) {
-        console.log("GOT STALE EVENT....");
-        return;
-      }
-    },this).
-    on('exitState:pending', function() {
-      //console.log('Session ' + this.sessionId + ' exiting pending state...');
-
-      if (this.sessionId !== mySessionId) {
-        console.log("GOT STALE EVENT....");
-        return;
-      }
-    },this).
-    on('enterState:incoming', function() {
-      //console.log('Session ' + this.sessionId + ' entering incoming state...');
-
-      if (this.sessionId !== mySessionId) {
-        console.log("GOT STALE EVENT....");
-        return;
-      }
-    },this).
-    on('exitState:incoming', function() {
-      //console.log('Session ' + this.sessionId + ' exiting incoming state...');
-
-      if (this.sessionId !== mySessionId) {
-        console.log("GOT STALE EVENT....");
-        return;
-      }
-    },this).
-    on('enterState:outgoing', function() {
-      //console.log('Session ' + this.sessionId + ' entering outgoing state...');
-
-      if (this.sessionId !== mySessionId) {
-        console.log("GOT STALE EVENT....");
-        return;
-      }
-    },this).
-    on('exitState:outgoing', function() {
-      //console.log('Session ' + this.sessionId + ' exiting outgoing state...');
-
-      if (this.sessionId !== mySessionId) {
-        console.log("GOT STALE EVENT....");
-        return;
-      }
-    },this).
-    on('enterState:connecting', function() {
-      //console.log('Session ' + this.sessionId + ' entering connecting state...');
-
-      if (this.sessionId !== mySessionId) {
-        console.log("GOT STALE EVENT....");
-        return;
-      }
-    },this).
-    on('exitState:connecting', function() {
-      //console.log('Session ' + this.sessionId + ' exiting connecting state...');
-
-      if (this.sessionId !== mySessionId) {
-        console.log("GOT STALE EVENT....");
-        return;
-      }
-    },this).
-    on('enterState:active', function() {
-      //console.log('Session ' + this.sessionId + ' entering active state...');
-
-      if (this.sessionId !== mySessionId) {
-        console.log("GOT STALE EVENT....");
-        return;
-      }
-    },this).
-    on('exitState:active', function() {
-      //console.log('Session ' + this.sessionId + ' exiting active state...');
-
-      if (this.sessionId !== mySessionId) {
-        console.log("GOT STALE EVENT....");
-        return;
-      }
-    },this).
-    on('mediaSession:removeRemoteStream', function(event) {
-      //console.log('Session ' + this.sessionId + ' lost a remote stream...');
-
-      if (this.sessionId !== mySessionId) {
-        console.log("GOT STALE EVENT....");
-        return;
-      }
-    }, this).
-    on('mediaSession:removeLocalStream', function(event) {
-      //console.log('Session ' + this.sessionId + ' lost a local stream...');
-
-      if (this.sessionId !== mySessionId) {
-        console.log("GOT STALE EVENT....");
-        return;
-      }
-    }, this).
-    on('change:mediaState', function(event) {
-      console.log('Session ' + this.sessionId + ' media state changed from '+event.oldVal + ' to ' + event.val);
-      if (this.sessionId !== mySessionId) {
-        console.log("GOT STALE EVENT....");
-        return;
-      }
-
-      if ( event.val === 'closed' || event.val === 'disconnected' || event.val === 'inactive') {
-        this.disconnect();
-      }
-    }, this).
-    on('mediaSession:addLocalStream', function(event) {
-      //console.log('Session ' + this.sessionId + ' got a local stream...');
-
-      if (this.sessionId !== mySessionId) {
-        console.log("GOT STALE EVENT....");
-        return;
-      }
-    }, this).
-    on('mediaSession:addRemoteStream', function(event) {
-      var remoteStream = event.stream;
-
-      if (remoteStream === this.remoteStream) {
-        return;
-      }
-
-      console.log("GOT REMOTE STREAM");
-      //console.log('Session ' + this.sessionId + ' got a remote stream...');
-
-      if (this.sessionId !== mySessionId) {
-        console.log("GOT STALE EVENT....");
-        return;
-      }
-
-      if (typeof(this.remoteStream) !== 'undefined') {
-        console.log("GOT DOUBLE REMOTE STREAM!");
-
-        //this.remoteStream.stop();
-        this.$remoteContainer.empty();
-      }
-      
-      this.remoteStream = remoteStream;
-      this.remoteStreamElement = remoteStream.createVideoElement();
-      this.remoteStreamElement.id = REMOTE_STREAM_ID;
-      this._registerVideoResize(this.remoteStreamElement);
-      this.$remoteContainer.append(this.remoteStreamElement);
-
-      this._unpauseAndResize();
-    }, this);
-
-    if ( mediaSession.isIncoming()) {
-      // Accept the call if its incoming
-      mediaSession.start();
-    }
+  ChatClient.prototype._onVideoRemoved = function() {
+      console.log("videoRemoved");
+      this._disconnect();
   }
 
   ChatClient.prototype.listen = function(newSessionId,newLocalContainer,newRemoteContainer) {
-    //console.log("CP: Listening on " + newSessionId + " - New local container is " + newLocalContainer + " New remote is " + newRemoteContainer);
+    console.log('listen called');
 
     // Not much else to do, its all event
     this.sessionId = newSessionId;
+    this.webrtc.joinRoom(''+newSessionId);
     this._switchContainers(newLocalContainer,newRemoteContainer);
     this.connected = true;
   }
-  ChatClient.prototype.connect = function(newSessionId,newLocalContainer,newRemoteContainer) {
-    //console.log("CP: Connecting to " + newSessionId + " - New local container is " + newLocalContainer + " New remote is " + newRemoteContainer);
+
+  ChatClient.prototype.connect = function(newSessionId, newLocalContainer, newRemoteContainer) {
+    console.log('connect called');
 
     // And now for the new session
     this.sessionId = newSessionId;
+    this.webrtc.joinRoom(''+newSessionId);
     this._switchContainers(newLocalContainer,newRemoteContainer);
+
     console.log('Connecting to session',this.sessionId);
-    this.session = this.vlineSession.startMedia(newSessionId);
-    
     this.connected = true;
   }
 
   ChatClient.prototype.disconnect = function() {
-    if ( this.connected === false) {
-      return;
-    }
+    console.log("disconnect called");
 
-    console.log("DISCONNECTING!!!!");
-
-    this.connected = false;
-
-    if (typeof(this.mediaSession) !== 'undefined') {
-      if (!this.mediaSession.isClosed()) {
-        this.mediaSession.stop();
-      }
-      this.mediaSession = undefined;
-    }
-
+    this._disconnect();
     // No need to empty local, as we keep it around
-    this.$remoteContainer.empty();
+    // this.$remoteContainer.empty();
+    // this.disconnectCb();
+  }
 
-    this.disconnectCb();
+  ChatClient.prototype._disconnect = function() {
+      if ( this.connected ) {
+        this.connected = false;
+        this.$remoteContainer.empty();
+        this.webrtc.leaveRoom();
+        this.disconnectCb();
+      }
   }
 
   return ChatClient;

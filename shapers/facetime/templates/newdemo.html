@@ -17,47 +17,6 @@
         <div id="remoteVideos"></div>
     </body>
     <script type='text/javascript'>
-        var peerConnectionConfig;
-        $.ajax({
-            type: "POST",
-            dataType: "json",
-            url: "https://api.xirsys.com/getIceServers",
-            data: {
-                ident: "hochbergg",
-                secret: "20313345-b51a-4a06-96dd-6f4d126c1848",
-                domain: "chatsummit.herokuapp.com",
-                application: "default",
-                room: 'default',
-                secure: 1
-            },
-            success: function (data, status) {
-                // data.d is where the iceServers object lives
-                peerConnectionConfig = data.d;
-                console.log(peerConnectionConfig);
 
-                initializeWebRTC();
-            },
-            async: false
-        });
-
-        function initializeWebRTC() {
-            var webrtc = new SimpleWebRTC({
-                url: 'http://summitsignal.herokuapp.com:80',
-                // the id/element dom element that will hold "our" video
-                localVideoEl: 'localVideo',
-                // the id/element dom element that will hold remote videos
-                remoteVideosEl: 'remoteVideos',
-                // immediately ask for camera access
-                autoRequestMedia: true,
-                // Give peerConnectionConfig
-                peerConnectionConfig: peerConnectionConfig
-            });
-
-            // we have to wait until it's ready
-            webrtc.on('readyToCall', function () {
-                // you can name it anything
-                webrtc.joinRoom('your awesome room name');
-            });
-        }
     </script>
 </html>

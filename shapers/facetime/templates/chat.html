@@ -5,7 +5,7 @@
   profile_id = {{profile_id}}
 </script>
 
-<script src="https://static.vline.com/vline.js"></script>
+<script src="http://simplewebrtc.com/latest.js"></script>
 <script src="/static/js/jquery.gritter.min.js"></script>
 <script src="/static/js/chat-state.js"></script>
 <script src="/static/js/video-page.js"></script>
@@ -30,9 +30,9 @@
             $(".current-video").addClass('searching-for-partner');
             window.chatWindow.disconnect();
 
-            window.setTimeout(function() {
+            //window.setTimeout(function() {
                 window.chatWindow.connect();
-            },5000);
+            //},5000);
         } else {
             pendingNext = true;
         }
@@ -41,6 +41,7 @@
      function chatReady() {
          if ( pendingNext ) {
              isChatReady = true;
+             console.log("Next Chat - cause ready");
              nextChat();
          }
      }
@@ -55,7 +56,7 @@
      var endPending = false;
 
      function handleEvent(event,data) {
-        console.log(event + " " + data);
+        //console.log(event + " " + data);
 
         if ( event === 'chatStart' ) { 
           window.analytics.track("Chat Started");
@@ -102,6 +103,7 @@
         }
 
         if ( event === 'chatEnd' ) {
+            console.log("ENDD");
           if ( showingEndChat ) {
             showingEndChat = false;
             $.gritter.remove(chatEndNotif);
@@ -123,6 +125,7 @@
         }
 
         if ( event === 'eventStart') {
+          console.log("Next Chat - cause event start");
           nextChat();
           $(".js-pre-chat-container").addClass("hidden");
           $(".js-chat-container").removeClass("hidden");
@@ -130,6 +133,7 @@
         }
 
         if ( event === 'eventLate') {
+          console.log("Next Chat - cause event late");
           nextChat();
           $(".js-pre-chat-container").addClass("hidden");
           $(".js-chat-container").removeClass("hidden");
@@ -177,6 +181,7 @@
                 $(".current-video").removeClass('searching-for-partner');
             },function() {
                 window.stateMachine.endChat();
+                console.log("Next Chat - cause chat ended");
                 nextChat();
             })
           }
