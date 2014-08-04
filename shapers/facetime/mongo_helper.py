@@ -76,12 +76,12 @@ class ProfilesDao(object):
         self._profiles.insert(profile)
         return profile_id
 
-    def add_seen_users(self,profile_id,seen):
+    def add_seen_users(self, profile_id, seen):
         to_add = {}
         for u in seen:
             to_add['seen.'+u] = 1
 
-        print "ADDSEEN",to_add,profile_id
+        print "ADDSEEN", to_add, profile_id
 
         self._profiles.find_and_modify(
             query={'profile_id':int(profile_id)},
