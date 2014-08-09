@@ -146,6 +146,17 @@ h2{font-size:32px; font-weight:700; color: #b5c7f3;margin-bottom: 10px;}
 
 #header .links a:hover{ color:#b5c7f3;}
 
+#header #event-name {
+
+	border-radius: 3px;
+	background: #B4C4F5;
+	display:inline;
+	font-size: 14px;
+	color: #212F55;	
+	padding: 1px 4px 1px 4px;
+	margin-left:10px;
+}
+
 .main_bg{background: url(../images/world_map_bg.jpg) no-repeat center top #445987; padding-bottom:80px;background-size: cover;}
 
 .main_content {

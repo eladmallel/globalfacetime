@@ -71,6 +71,8 @@ def event_login(request,event_slug):
     # Clear the supersecret (So we can login to other events)
     request.session['supersecret'] = False
 
+    c['event_slug'] = event_slug
+    
     return shortcuts.render_to_response('login.html', c, context_instance=RequestContext(request))
 
 def api_select_event(request,event_slug):
