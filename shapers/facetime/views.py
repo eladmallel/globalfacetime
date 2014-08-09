@@ -72,7 +72,7 @@ def event_login(request,event_slug):
     request.session['supersecret'] = False
 
     c['event_slug'] = event_slug
-    
+
     return shortcuts.render_to_response('login.html', c, context_instance=RequestContext(request))
 
 def api_select_event(request,event_slug):
@@ -309,3 +309,9 @@ On behalf of %s''' % (to_name, from_name, from_email, from_name)
 
 def newdemo(request):
     return shortcuts.render_to_response('newdemo.html',{},context_instance=RequestContext(request))
+
+def about_chatsummit(request): 
+    return shortcuts.render_to_response('about_chatsummit.html',{},context_instance=RequestContext(request))
+
+def get_help(request): 
+    return shortcuts.render_to_response('help.html',{},context_instance=RequestContext(request))
