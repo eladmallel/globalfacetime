@@ -27,10 +27,9 @@ urlpatterns = patterns('',
     # TODO: Needs to refactor by moving all API calls to /api/v1/
     # TODO: Needs to refactor by moving all user http calls to /<event slug>/url
     url(r'^(?P<event_slug>\w+)$', 'shapers.facetime.views.event_login'),
-    # url(r'^shapers/', include('shapers.foo.urls')),
 
+    # /
+    url(r'^$', 'shapers.facetime.views.about_chatsummit')
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
-    # Uncomment the next line to enable the admin:
 )
