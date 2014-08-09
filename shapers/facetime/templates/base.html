@@ -39,7 +39,9 @@
             <header id="header" class="clearfix">
                 <img id="logo" alt="logo" class="left" src="/static/images/logo.png">
                 
+                {% if event_slug %}
                 <div id="event-name"> {{ event_slug }} </div>
+                {% endif %}
 
                 <div class="links right">
                     <a href="#">About</a>
