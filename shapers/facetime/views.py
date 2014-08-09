@@ -315,3 +315,10 @@ def about_chatsummit(request):
 
 def get_help(request): 
     return shortcuts.render_to_response('help.html',{},context_instance=RequestContext(request))
+
+def no_event(request): 
+    return shortcuts.render_to_response('no_event.html',{},context_instance=RequestContext(request))
+
+def enter_event(request):
+    event_name = request.POST.get('event_name')
+    return event_login(request, event_name)

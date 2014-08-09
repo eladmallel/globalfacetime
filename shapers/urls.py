@@ -6,6 +6,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     # Examples:
+    url(r'^enter_event$', 'shapers.facetime.views.enter_event'),
     url(r'^profile$', 'shapers.facetime.views.edit_profile'),
     url(r'^chat$', 'shapers.facetime.views.chat'),
     url(r'^connect$', 'shapers.facetime.views.connect'),
@@ -29,7 +30,7 @@ urlpatterns = patterns('',
     url(r'^(?P<event_slug>\w+)$', 'shapers.facetime.views.event_login'),
 
     # /
-    url(r'^$', 'shapers.facetime.views.about_chatsummit')
+    url(r'^$', 'shapers.facetime.views.no_event')
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 )

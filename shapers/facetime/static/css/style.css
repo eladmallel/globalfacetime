@@ -171,9 +171,11 @@ h3{font-size:25px; color: #b5c7f3;}
 
 .password_page{ padding:90px 0 150px;}
 
-.password_form input[type="text"] { padding-right:130px;}
+.event_form { width: 580px; }
 
-.password_form input[type="submit"]{width:124px; position:absolute; right:0; top:0;}
+.event_form input[type="text"], .password_form input[type="text"] {padding-right:130px;}
+
+.event_form input[type="submit"], .password_form input[type="submit"]{width:124px; position:absolute; right:0; top:0;}
 
 .user_form .error {
 	margin-top: -10px;
