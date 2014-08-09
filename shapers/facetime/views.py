@@ -87,13 +87,14 @@ def api_select_event(request,event_slug):
 
 @verify_event
 def edit_profile(request):
+    c = {}
+    c['event_slug'] = request.session.get('event_slug')
+
     password = request.POST.get('password')
     if password == request.event.password or request.session.get('supersecret') == True:
         request.session['supersecret'] = True
-        c = {}
         return shortcuts.render_to_response('about_you.html', c, context_instance=RequestContext(request))
     else:
-        c = {}
         return shortcuts.render_to_response('password_error.html', c, context_instance=RequestContext(request))
 
 SECRET_API_KEY = 'anyuni123'
@@ -179,7 +180,8 @@ def chat(request):
             return shortcuts.redirect('/')
 
     c = {
-        'profile_id': profile_id
+        'profile_id': profile_id, 
+        'event_slug': request.event.slug
     }
     return shortcuts.render_to_response('chat.html', c, context_instance=RequestContext(request))
 
@@ -242,7 +244,10 @@ def get_alive_sessions(request):
 
 
 def about_you(request):
-    return shortcuts.render_to_response('about_you.html',{},context_instance=RequestContext(request))
+    c = {}
+    c['event_slug'] = request.session.get('event_slug') 
+
+    return shortcuts.render_to_response('about_you.html',c,context_instance=RequestContext(request))
 
 def password(request):
     return shortcuts.render_to_response('password.html',{},context_instance=RequestContext(request))
