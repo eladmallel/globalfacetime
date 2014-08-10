@@ -67,6 +67,8 @@
           window.analytics.track("Chat Canceled");
           $(".partner-name").text("Waiting for a peer");
           $(".partner-description").text("Hang on tight...");
+          $('.partner-profile-picture').addClass('default');
+          $('.partner-profile-picture').css('background-image', '');
         }
 
         if ( event === 'chatStart' || event === 'chatInProgress') {
@@ -120,6 +122,8 @@
           $(".frame-contents").text("Looking for your next chat partner...");
           $(".partner-name").text("Waiting for a peer");
           $(".partner-description").text("Hang on tight...");
+          $('.partner-profile-picture').addClass('default');
+          $('.partner-profile-picture').css('background-image', '');
         }
 
         if ( event === 'eventEarly' ) {
