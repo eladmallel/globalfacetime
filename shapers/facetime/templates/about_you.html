@@ -11,7 +11,7 @@
 
 {% endblock %}
 {% block content %}
-<form action="/chat" method="POST" class="user_form js-about-you-form">
+<form action="/create_profile" method="POST" class="user_form js-about-you-form">
     {% csrf_token %}
     <h2>How do you want to appear as?</h2>
     <input type="text" name="name" placeholder="Name">

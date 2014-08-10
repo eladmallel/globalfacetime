@@ -262,10 +262,10 @@ ChatWindow = (function() {
         //console.log("Got Session: Now get a partner");
         if (self.peerId === self.user) {
           console.log("listening");
-          self.chatClient.listen(self.peerId,self.$publisherContainer,self.$subscriberContainer);  
+          self.chatClient.listen(self.sessionId,self.$publisherContainer,self.$subscriberContainer);
         } else {
           console.log("connecting");
-          self.chatClient.connect(self.peerId,self.$publisherContainer,self.$subscriberContainer);
+          self.chatClient.connect(self.sessionId,self.$publisherContainer,self.$subscriberContainer);
           window.peerEmail = self.peerProfile.email
         }
       },

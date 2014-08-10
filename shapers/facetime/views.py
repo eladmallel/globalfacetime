@@ -132,7 +132,7 @@ def api_create_profile(request,event_slug):
 
 @verify_supersecret
 @verify_event
-def chat(request):
+def create_profile(request):
     profile_id = None
     if request.POST.get('name'):
         # you did POST - need to create your profile and load page
@@ -174,10 +174,20 @@ def chat(request):
             'ip' : get_client_ip(request)
             })
 
+        request.session['profile_id'] = profile_id;
+
+        return shortcuts.redirect('/chat')
+
     else:
-        profile_id = request.session.get('profile_id', None)
-        if not profile_id:
-            return shortcuts.redirect('/')
+        return shortcuts.redirect('/')
+
+
+@verify_supersecret
+@verify_event
+def chat(request):
+    profile_id = request.session.get('profile_id', None)
+    if not profile_id:
+        return shortcuts.redirect('/')
 
     c = {
         'profile_id': profile_id, 

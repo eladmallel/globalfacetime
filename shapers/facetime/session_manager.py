@@ -26,11 +26,11 @@ class SessionManager(object):
                 break # Prevent us from joining ourself
 
         if not peer_id:
-            print "creating for user %s"%user
             session_id = self._sessions_dao.create_session(user,user_profile,event_slug)
+            print "creating for user %s - %s"%(user,session_id)
             peer_id = user
         else:
-            print "joining user %s to user %s"%(user,peer_id)
+            print "joining user %s to user %s - %s"%(user,peer_id, session_id)
 
         return peer_id,session_id
 

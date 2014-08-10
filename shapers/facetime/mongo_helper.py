@@ -109,7 +109,6 @@ class SessionsDao(object):
             'event_slug': event_slug, # for this event
             'peer_count': 1, # With only one person
             'latest_heartbeat': {'$gte': staleness_threshold}, # That isn't stale
-
         }
 
         # Make sure nobody I know is in the session
@@ -118,6 +117,8 @@ class SessionsDao(object):
 
         # And that it isn't my session
         query['peers.'+str(profile['profile_id'])] = {'$exists':False}
+
+        print "Relevant query",query
 
         return [x for x in self._sessions.find(query)]
 
@@ -188,7 +189,7 @@ class SessionsDao(object):
             print "Trying to join ", user_id, session_id
             host,joined_id = self._try_join_specific_session(user_id,profile,session_id)
             if host is not None:
-                print "No!"
+                print "Joined!"
                 return host,joined_id
 
         return None,None
