@@ -5,8 +5,8 @@ import os
 import random
 import urllib, hashlib
 
-#SECONDS_TILL_CONSIDERED_SEEN = 10
-SECONDS_TILL_CONSIDERED_SEEN = 1
+SECONDS_TILL_CONSIDERED_SEEN = 10
+#SECONDS_TILL_CONSIDERED_SEEN = 1
 
 client = MongoClient(settings.MONGO_URL)
 
