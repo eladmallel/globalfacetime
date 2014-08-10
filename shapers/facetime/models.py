@@ -14,7 +14,7 @@ class Person(models.Model):
 
 class Event(models.Model):
 	name = models.CharField(max_length=512)
-	slug = models.CharField(max_length=128)
+	slug = models.CharField(max_length=128, help_text="This will be part of the URL http://www.chatsummit.com/{slug}. No funny characters please!")
 	start_utc = models.DateTimeField(default=datetime.datetime.utcnow)
 	end_utc = models.DateTimeField(default=lambda *args,**kwargs: datetime.datetime.utcnow() + DEFAULT_EVENT_TIME)
 	time_per_user_session_minutes = models.FloatField(default=DEFAULT_TIME_PER_USER_SESSION.total_seconds() / 60.)

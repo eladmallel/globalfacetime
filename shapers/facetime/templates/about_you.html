@@ -13,7 +13,7 @@
 {% block content %}
 <form action="/chat" method="POST" class="user_form js-about-you-form">
     {% csrf_token %}
-    <h2>About You</h2>
+    <h2>How do you want to appear as?</h2>
     <input type="text" name="name" placeholder="Name">
     <input type="text" class="js-form-email" name="email" placeholder="Email">
     <input type="text" name="country" placeholder="Country">

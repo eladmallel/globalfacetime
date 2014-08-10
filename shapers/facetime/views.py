@@ -71,6 +71,8 @@ def event_login(request,event_slug):
     # Clear the supersecret (So we can login to other events)
     request.session['supersecret'] = False
 
+    c['event_name'] = event.name
+
     return shortcuts.render_to_response('login.html', c, context_instance=RequestContext(request))
 
 def api_select_event(request,event_slug):
@@ -85,13 +87,14 @@ def api_select_event(request,event_slug):
 
 @verify_event
 def edit_profile(request):
+    c = {}
+    c['event_name'] = request.event.name
+
     password = request.POST.get('password')
     if password == request.event.password or request.session.get('supersecret') == True:
         request.session['supersecret'] = True
-        c = {}
         return shortcuts.render_to_response('about_you.html', c, context_instance=RequestContext(request))
     else:
-        c = {}
         return shortcuts.render_to_response('password_error.html', c, context_instance=RequestContext(request))
 
 SECRET_API_KEY = 'anyuni123'
@@ -177,7 +180,8 @@ def chat(request):
             return shortcuts.redirect('/')
 
     c = {
-        'profile_id': profile_id
+        'profile_id': profile_id, 
+        'event_name': request.event.name
     }
     return shortcuts.render_to_response('chat.html', c, context_instance=RequestContext(request))
 
@@ -240,10 +244,15 @@ def get_alive_sessions(request):
 
 
 def about_you(request):
-    return shortcuts.render_to_response('about_you.html',{},context_instance=RequestContext(request))
+    c = {}
+    c['event_name'] = request.event.name
+
+    return shortcuts.render_to_response('about_you.html',c,context_instance=RequestContext(request))
 
 def password(request):
-    return shortcuts.render_to_response('password.html',{},context_instance=RequestContext(request))
+    c = {}
+    c['event_name'] = request.event.name
+    return shortcuts.render_to_response('password.html',c,context_instance=RequestContext(request))
 
 def share_contact(request):
     global session_manager
@@ -307,3 +316,16 @@ On behalf of %s''' % (to_name, from_name, from_email, from_name)
 
 def newdemo(request):
     return shortcuts.render_to_response('newdemo.html',{},context_instance=RequestContext(request))
+
+def about_chatsummit(request): 
+    return shortcuts.render_to_response('about_chatsummit.html',{},context_instance=RequestContext(request))
+
+def get_help(request): 
+    return shortcuts.render_to_response('help.html',{},context_instance=RequestContext(request))
+
+def no_event(request): 
+    return shortcuts.render_to_response('no_event.html',{},context_instance=RequestContext(request))
+
+def enter_event(request):
+    event_name = request.POST.get('event_name')
+    return event_login(request, event_name)

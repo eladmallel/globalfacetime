@@ -8,7 +8,7 @@
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-<title></title>
+<title>ChatSummit</title>
 
 <!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
 <link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
@@ -39,10 +39,14 @@
             <header id="header" class="clearfix">
                 <img id="logo" alt="logo" class="left" src="/static/images/logo.png">
                 
+                {% if event_name %}
+                <div id="event-name"> {{ event_name }} </div>
+                {% endif %}
+
                 <div class="links right">
-                    <a href="#">About</a>
+                    <a href="/about">About</a>
                     <span class="divider">|</span>
-                    <a href="#">Help</a>
+                    <a href="/help">Help</a>
                 </div>
                 
             </header>
