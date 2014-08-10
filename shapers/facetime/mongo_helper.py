@@ -288,14 +288,20 @@ class SessionsDao(object):
         # TODO: Make seen detection use the lastest joiner instead of each by himself
         # Like by using the max on joined instead of the per-user value
 
+        max_joined = None
         for uid, joined in session.get('joined',{}).items():
-            if uid == user:
-                continue
+            if joined > max_joined:
+                max_joined = joined
 
-            print "SEEN", uid, joined, now, (now-joined).total_seconds(), session.get('match_score', None)
+        if max_joined is not None:
+            for uid, joined in session.get('joined',{}).items():
+                if uid == user:
+                    continue
 
-            if (now - joined).total_seconds() >= SECONDS_TILL_CONSIDERED_SEEN:
-                seen.append(uid)
-                match_score = session.get('match_score', None)
+                print "SEEN", max_joined, uid, joined, now, (now-max_joined).total_seconds(), session.get('match_score', None)
+
+                if (now - max_joined).total_seconds() >= SECONDS_TILL_CONSIDERED_SEEN:
+                    seen.append(uid)
+                    match_score = session.get('match_score', None)
 
         return now, session["heartbeats"], seen, match_score
