@@ -309,6 +309,12 @@ ChatWindow = (function() {
     }
   }
 
+
+  ChatWindow.prototype._processNumUsers = function(num_users) {
+      $('#outof').text(' out of ' + num_users + ' amazing conversationalists');
+  }
+
+
   ChatWindow.prototype._sendHeartbeat = function() {
     //console.log("SENDING HEARTBEAT? "+this.inSession);
 
@@ -327,6 +333,7 @@ ChatWindow = (function() {
             if ( self.inSession ) {
                 self._processHeartbeats(data.now, data.heartbeats, self.sessionId);
                 self._processProfiles(self.user, data.profiles);
+                self._processNumUsers(data.num_users);
             }
         }
       });

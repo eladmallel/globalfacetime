@@ -221,14 +221,15 @@ def heartbeat(request):
     session_id = request.GET.get("sessionId")
     user = request.GET.get("user")
 
-    now,heartbeats,profiles = session_manager.heartbeat(session_id,user)
+    now,heartbeats,profiles,num_users = session_manager.heartbeat(session_id,user)
 
     return HttpResponse(
         json.dumps(
             {
                 'now': now,
                 'heartbeats': heartbeats,
-                'profiles': profiles
+                'profiles': profiles,
+                'num_users': num_users,
             },
             cls=DjangoJSONEncoder
         ),
@@ -251,7 +252,6 @@ def get_alive_sessions(request):
         del s["_id"] # ObjectIds don't serialize
 
     return HttpResponse(json.dumps(sessions,cls=DjangoJSONEncoder), content_type="application/json")
-
 
 def about_you(request):
     c = {}

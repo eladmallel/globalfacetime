@@ -41,11 +41,36 @@ def get_profiles_collection():
 class ProfilesDao(object):
     def __init__(self):
         self._profiles = get_profiles_collection()
+        self._cached_num_users = 0
+        self._last_user_num_cache = None
 
     def get_by_id(self, profile_id):
         profile = self._profiles.find_one({'profile_id': profile_id})
         profile['_id'] = str(profile['_id'])
         return profile
+
+    def heartbeat(self, session_id, user):
+        now = datetime.datetime.utcnow()
+
+        try:
+            user = int(user)
+        except ValueError:
+            return
+
+        self._profiles.find_and_modify(
+            query={'profile_id':user},
+            update={'$set': {'last_heartbeat': now}},
+            upsert=False)
+
+    def get_num_alive_users(self, force=False):
+        if force or \
+            self._last_user_num_cache is None or \
+            self._last_user_num_cache < datetime.datetime.utcnow() - datetime.timedelta(milliseconds=settings.USER_NUM_CACHE_TIME_MILLI):
+
+            staleness_threshold = datetime.datetime.utcnow() - datetime.timedelta(milliseconds=settings.CHAT_MAXIMUM_STALENESS_ALLOWED_MILLI)
+            self._cached_num_users = self._profiles.find({'last_heartbeat': {'$gte': staleness_threshold}}).count()
+
+        return self._cached_num_users
 
     def create_new_profile(self, name, email, country, city, interests, event_slug, ip, geoip_info):
         profile_id = random.randint(0,1<<32)
@@ -210,11 +235,11 @@ class SessionsDao(object):
         self._sessions.insert(session)
         return session['_id']
 
-    def heartbeat(self,session_id,user):
+    def heartbeat(self, session_id, user):
         now = datetime.datetime.utcnow()
         session = self._sessions.find_and_modify(
             query={'_id':session_id},
-            update={'$set':{'heartbeats.'+user:now,'latest_heartbeat':now}},
+            update={'$set': {'heartbeats.'+user: now, 'latest_heartbeat': now}},
             upsert=False,
             new=True)
 

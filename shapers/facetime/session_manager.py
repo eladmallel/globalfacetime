@@ -37,6 +37,7 @@ class SessionManager(object):
     def heartbeat(self,session_id,user):
         print "hearbeat: %s - %s"%(user,session_id)
         now, heartbeats, seen = self._sessions_dao.heartbeat(session_id, user)
+        self._profiles_dao.heartbeat(session_id, user)
 
         profile_ids = heartbeats.keys()
         profiles = dict()
@@ -47,7 +48,7 @@ class SessionManager(object):
         if len(seen) > 0:
             self._profiles_dao.add_seen_users(user, seen)
 
-        return now, heartbeats, profiles
+        return now, heartbeats, profiles, self._profiles_dao.get_num_alive_users()
 
 
     def get_alive_sessions(self):

@@ -119,7 +119,7 @@
           }
           timeLeftInChat = undefined;
           window.chatWindow.disconnect();
-          $(".frame-contents").text("Looking for your next chat partner...");
+          $(".frame-contents").html("Looking for your next chat partner<span id='outof'></span>...");
           $(".partner-name").text("Waiting for a peer");
           $(".partner-description").text("Hang on tight...");
           $('.partner-profile-picture').addClass('default');
@@ -148,7 +148,7 @@
           nextChat();
           $(".js-pre-chat-container").addClass("hidden");
           $(".js-chat-container").removeClass("hidden");
-          $(".frame-contents").text("Looking for your next chat partner...");
+          $(".frame-contents").html("Looking for your next chat partner<span id='outof'></span>...");
         }
 
         if ( event === 'eventAlreadyDone') {
