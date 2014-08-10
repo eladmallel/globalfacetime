@@ -5,7 +5,7 @@ import os
 import random
 import urllib, hashlib
 
-SECONDS_TILL_CONSIDERED_SEEN = 10
+SECONDS_TILL_CONSIDERED_SEEN = 20
 #SECONDS_TILL_CONSIDERED_SEEN = 1
 
 client = MongoClient(settings.MONGO_URL)
@@ -290,7 +290,7 @@ class SessionsDao(object):
 
         max_joined = None
         for uid, joined in session.get('joined',{}).items():
-            if joined > max_joined:
+            if max_joined is None or joined > max_joined:
                 max_joined = joined
 
         if max_joined is not None:
