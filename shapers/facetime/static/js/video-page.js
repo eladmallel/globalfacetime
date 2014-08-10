@@ -60,7 +60,9 @@ ChatClient = (function() {
 
   ChatClient.prototype._initializeWebRTC = function() {
     this.webrtc = new SimpleWebRTC({
-        url: 'http://summitsignal.herokuapp.com:80',
+        //url: 'http://summitsignal.herokuapp.com:80',
+        //url: 'http://10.0.0.13:8888',
+        url: 'http://174.129.2.170:8888',
         // the id/element dom element that will hold "our" video
         localVideoEl: this.$localContainer[0],
         // the id/element dom element that will hold remote videos
@@ -172,7 +174,9 @@ ChatClient = (function() {
 
     // Not much else to do, its all event
     this.sessionId = newSessionId;
+    console.log("Joining room because of listen", newSessionId);
     this.webrtc.joinRoom(''+newSessionId);
+    console.log("Joined room because of listen", newSessionId);
     this._switchContainers(newLocalContainer,newRemoteContainer);
     this.connected = true;
   }
@@ -182,7 +186,9 @@ ChatClient = (function() {
 
     // And now for the new session
     this.sessionId = newSessionId;
+    console.log("Joining room because of connect", newSessionId);
     this.webrtc.joinRoom(''+newSessionId);
+    console.log("Joined room because of connect", newSessionId);
     this._switchContainers(newLocalContainer,newRemoteContainer);
 
     console.log('Connecting to session',this.sessionId);
