@@ -206,6 +206,11 @@ def connect(request):
     if int(peer_id) != int(profile_id):
         profilesDao = ProfilesDao()
         profile = profilesDao.get_by_id(int(profile_id))
+
+        # TODO: Fix ugly hack
+        if 'last_heartbeat' in profile:
+            del profile['last_heartbeat'] # UGLY HACK
+
         response_data['peerProfile'] = profile
 
     #response_data['sessionId'] = '2_MX40MTgwNTc5Mn4xMjcuMC4wLjF-VGh1IFNlcCAyNiAwMjoxMDo1OCBQRFQgMjAxM34wLjkzMzI0MDF-'
@@ -214,6 +219,7 @@ def connect(request):
     response_data['peerId'] = peer_id
     response_data['sessionId'] = session_id
 
+    print "RESP",response_data
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 def heartbeat(request):

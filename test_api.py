@@ -5,7 +5,7 @@ import time
 import threading
 import copy
 
-SERVER_URL = 'http://localhost:8000'
+SERVER_URL = 'http://localhost:8080'
 API_KEY = 'anyuni123'
 HEARBEAT_TIME = 1
 

@@ -5,8 +5,8 @@ import os
 import random
 import urllib, hashlib
 
-SECONDS_TILL_CONSIDERED_SEEN = 10
-#SECONDS_TILL_CONSIDERED_SEEN = 1
+#SECONDS_TILL_CONSIDERED_SEEN = 10
+SECONDS_TILL_CONSIDERED_SEEN = 1
 
 client = MongoClient(settings.MONGO_URL)
 
@@ -101,18 +101,34 @@ class ProfilesDao(object):
         self._profiles.insert(profile)
         return profile_id
 
-    def add_seen_users(self, profile_id, seen):
+    def add_seen_users_and_match(self, profile_id, seen, match_score):
+        print "ADDSEEN", seen, profile_id, match_score
+
+        profile = self._profiles.find_one({'profile_id':int(profile_id)})
+
+        if profile is None:
+            return
+
+        added_seen = False
         to_add = {}
+
         for u in seen:
-            to_add['seen.'+u] = 1
+            if u not in profile.get('seen',{}):
+                to_add['seen.'+u] = 1
+                added_seen = True
 
-        print "ADDSEEN", to_add, profile_id
+        # If we added someone to seen, update our match score
+        if added_seen:
+            previous_match_score = profile.get('match_score', 0)
+            previous_match_part = previous_match_score * 1. / settings.MATCH_SCORE_WINDOW * (settings.MATCH_SCORE_WINDOW - 1)
+            current_match_part = match_score * 1. / settings.MATCH_SCORE_WINDOW
+            new_match_score = previous_match_part + current_match_part
+            to_add['match_score'] = new_match_score
+            print "NEW MATCH SCORE",to_add['match_score']
 
-        self._profiles.find_and_modify(
-            query={'profile_id':int(profile_id)},
-            update={'$inc':to_add}, # TODO: Can't use $set due to bug in MongoDB (Change when its fixed)
-            upsert=False,
-            new=False)
+        self._profiles.update(
+            spec={'profile_id':int(profile_id)},
+            document={'$set':to_add})
 
 class SessionsDao(object):
     def __init__(self):
@@ -147,12 +163,19 @@ class SessionsDao(object):
 
         return [x for x in self._sessions.find(query)]
 
-    def _try_join_specific_session(self,user_id,profile,session_id):
+    def _try_join_specific_session(self,user_id,profile,session_id,match_score):
         query = {'_id':session_id, 'peer_count': 1}
 
         session = self._sessions.find_and_modify(
             query=query,
-            update={'$inc':{'peer_count': 1, 'peers.'+user_id: 1},'$set':{'joined.'+user_id:datetime.datetime.utcnow(),'user_profiles.'+user_id:profile}},
+            update={
+                '$inc':{'peer_count': 1, 'peers.'+user_id: 1},
+                '$set':{
+                    'joined.'+user_id:datetime.datetime.utcnow(),
+                    'user_profiles.'+user_id:profile,
+                    'match_score': match_score
+                }
+            },
             upsert=False,
             new=False)
         if session:
@@ -164,11 +187,21 @@ class SessionsDao(object):
 
     def _prioritize_sessions(self, user_id, profile, sessions):
         # Prioritize by conflict country, then other country then other ip then else
+        # Low number - better match
+
+        # Match score is higher if its a better match, to favor people who historically got shittier matches
 
         CONFLICT_SCORE = 0
+        CONFLICT_MATCH_SCORE = 5
+
         OTHER_COUNTRY_SCORE = 10000
+        OTHER_COUNTRY_MATCH_SCORE = 3
+
         OTHER_IP_SCORE = 20000
+        OTHER_IP_MATCH_SCORE = 1
+
         ELSE_SCORE = 30000
+        ELSE_MATCH_SCORE = 0
 
         user_country = profile['country_for_match']
         user_ip = profile['ip']
@@ -178,44 +211,47 @@ class SessionsDao(object):
             host_profile = s['user_profiles'][s['host']]
             host_country = host_profile['country_for_match']
             host_ip = host_profile['ip']
+            host_match_score = host_profile.get('match_score',0)
 
             conflict_countries = CONFLICTS_BY_COUNTRY.get(user_country,[])
             if host_country in conflict_countries:
-                scored_sessions.append((CONFLICT_SCORE, s))
+                scored_sessions.append((CONFLICT_SCORE+host_match_score, s, CONFLICT_MATCH_SCORE))
                 continue
 
             if host_country != user_country:
-                scored_sessions.append((OTHER_COUNTRY_SCORE, s))
+                scored_sessions.append((OTHER_COUNTRY_SCORE+host_match_score, s, OTHER_COUNTRY_MATCH_SCORE))
                 continue
 
             if host_ip != user_ip:
-                scored_sessions.append((OTHER_IP_SCORE, s))
+                scored_sessions.append((OTHER_IP_SCORE+host_match_score, s, OTHER_IP_MATCH_SCORE))
                 continue
 
             else:
-                scored_sessions.append((ELSE_SCORE, s))
+                scored_sessions.append((ELSE_SCORE+host_match_score, s, ELSE_MATCH_SCORE))
 
         scored_sessions.sort(key=lambda x: x[0])
-        sorted_sessions = [x[1]['_id'] for x in scored_sessions]
+        sorted_sessions = [{'session_id': x[1]['_id'], 'match_score': x[2]} for x in scored_sessions]
         return sorted_sessions
 
     def try_join_session(self,user_id,profile,event_slug):
-        relevant_sessions = self._get_relevant_sessions(profile,event_slug)
+        relevant_sessions = self._get_relevant_sessions(profile, event_slug)
 
         if len(relevant_sessions) == 0:
             return None,None
 
-        prioritized_sessions_ids = self._prioritize_sessions(user_id,profile,relevant_sessions)
+        prioritized_sessions_ids = self._prioritize_sessions(user_id, profile, relevant_sessions)
 
         if len(prioritized_sessions_ids) == 0:
             return None, None
 
-        for session_id in prioritized_sessions_ids:
-            print "Trying to join ", user_id, session_id
-            host,joined_id = self._try_join_specific_session(user_id,profile,session_id)
+        for info in prioritized_sessions_ids:
+            session_id = info['session_id']
+            match_score = info['match_score']
+            print "Trying to join ", user_id, session_id, match_score
+            host,joined_id = self._try_join_specific_session(user_id, profile, session_id, match_score)
             if host is not None:
                 print "Joined!"
-                return host,joined_id
+                return host, joined_id
 
         return None,None
 
@@ -247,13 +283,19 @@ class SessionsDao(object):
         # TODO: Might cause a performance issue with multiple updates on each heartbeat
 
         seen = []
-        for uid,joined in session.get('joined',{}).items():
+        match_score = None
+
+        # TODO: Make seen detection use the lastest joiner instead of each by himself
+        # Like by using the max on joined instead of the per-user value
+
+        for uid, joined in session.get('joined',{}).items():
             if uid == user:
                 continue
 
-            print "SEEN",uid,joined,now,(now-joined).total_seconds()
+            print "SEEN", uid, joined, now, (now-joined).total_seconds(), session.get('match_score', None)
 
             if (now - joined).total_seconds() >= SECONDS_TILL_CONSIDERED_SEEN:
                 seen.append(uid)
+                match_score = session.get('match_score', None)
 
-        return now,session["heartbeats"],seen
+        return now, session["heartbeats"], seen, match_score

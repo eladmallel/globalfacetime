@@ -210,3 +210,4 @@ POSTMARK_SENDER='Chat Summit <hello@chatsummit.com>'
 
 
 USER_NUM_CACHE_TIME_MILLI = 1000
+MATCH_SCORE_WINDOW = 3
