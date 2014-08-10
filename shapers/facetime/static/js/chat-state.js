@@ -56,7 +56,8 @@ function ChatStateMachine(handleEvent) {
             self.chatting = false;
             window.clearTimeout(self.personTimeout);
             self.handleEvent('chatEnd');
-            
+        } else {
+            self.handleEvent('chatCancel');
         }
     }
 

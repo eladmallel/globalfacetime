@@ -59,8 +59,14 @@
      function handleEvent(event,data) {
         //console.log(event + " " + data);
 
-        if ( event === 'chatStart' ) { 
+        if ( event === 'chatStart' ) {
           window.analytics.track("Chat Started");
+        }
+
+        if ( event === 'chatCancel' ) {
+          window.analytics.track("Chat Canceled");
+          $(".partner-name").text("Waiting for a peer");
+          $(".partner-description").text("Hang on tight...");
         }
 
         if ( event === 'chatStart' || event === 'chatInProgress') {

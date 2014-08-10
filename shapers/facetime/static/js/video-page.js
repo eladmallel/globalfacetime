@@ -29,6 +29,7 @@ ChatClient = (function() {
     this.disconnectCb = disconnectCb;
     this.connectCb = connectCb;
     this.readyCb = readyCb;
+    this.inSession = false;
 
     // Connect to XirSys
     console.log("Connecting to XirSys...");
@@ -157,11 +158,14 @@ ChatClient = (function() {
   ChatClient.prototype._onVideoAdded = function(video) {
     console.log("videoAdded");
 
-    this._registerVideoResize(video);
-    this.$remoteContainer.append(video);
-    this._unpauseAndResize();
+    if(!this.inSession) {
+        this.inSession = true;
+        this._registerVideoResize(video);
+        this.$remoteContainer.append(video);
+        this._unpauseAndResize();
 
-    this.connectCb();
+        this.connectCb();
+    }
   }
 
   ChatClient.prototype._onVideoRemoved = function() {
@@ -207,6 +211,7 @@ ChatClient = (function() {
   ChatClient.prototype._disconnect = function() {
       if ( this.connected ) {
         this.connected = false;
+        this.inSession = false;
         this.$remoteContainer.empty();
         this.webrtc.leaveRoom();
         this.disconnectCb();
