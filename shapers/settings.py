@@ -180,7 +180,7 @@ MONGO_URL = 'mongodb://ds047438.mongolab.com:47438/globalfacetime'
 #MONGO_PASSWORD = None
 #MONGO_URL = 'mongodb://localhost:27017/globalfacetime'
 
-CHAT_MAXIMUM_STALENESS_ALLOWED_MILLI = 20000
+CHAT_MAXIMUM_STALENESS_ALLOWED_MILLI = 5000
 
 # Parse database configuration from $DATABASE_URL
 import dj_database_url

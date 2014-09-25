@@ -11,7 +11,7 @@ GlobalFaceTime.user = "" + profile_id;
 SUBSCRIBER_DIV_NAME_BASE = "subscriberDiv";
 PUBLISHER_DIV_NAME_BASE = "publisherDiv";
 
-MAXIMUM_HEARTBEAT_AGE_BEFORE_DISCONNECT_MILLI = 20000;
+MAXIMUM_HEARTBEAT_AGE_BEFORE_DISCONNECT_MILLI = 5000;
 
 TEMPORARY_LOCAL_CONTAINER_ID = "temporary-local-container";
 TEMPORARY_REMOTE_CONTAINER_ID = "temporary-remote-container";
