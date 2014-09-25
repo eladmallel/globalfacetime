@@ -103,24 +103,25 @@ def install(server_config, params):
 
     local(command)
 
-    # Run a DB migration
-    # If using sudo, we have to run our own virtualenv
-    if 'VENV_LOCATION' in server_config:
-        command = '%s %s migrate' % (os.path.join(server_config['VENV_LOCATION'], 'bin', 'python'), os.path.join(server_config['BASE_DIR'], 'manage.py'))
-    else:
-        command = 'python %s migrate' %  os.path.join(server_config['BASE_DIR'], 'moriarty', 'manage.py')
-
-
-    # This assumes the deploy user has sudo permissions
-    # This is because migrate needs to touch the storage dir
-    # Which means we have to su into it
-    # Which we need to be root to do - but we don't want to be root
-
-    # TODO: Find a way around this
-    if 'UID' in server_config:
-        command = 'sudo -u %s HIREDSCORE_ENVIRONMENT=$HIREDSCORE_ENVIRONMENT %s' % (server_config['UID'], command)
-
-    local(command)
+    # Gal - Disabled this as we don't do migration right now in ChatSummit
+    # # Run a DB migration
+    # # If using sudo, we have to run our own virtualenv
+    # if 'VENV_LOCATION' in server_config:
+    #     command = '%s %s migrate' % (os.path.join(server_config['VENV_LOCATION'], 'bin', 'python'), os.path.join(server_config['BASE_DIR'], 'manage.py'))
+    # else:
+    #     command = 'python %s migrate' %  os.path.join(server_config['BASE_DIR'], 'moriarty', 'manage.py')
+    #
+    #
+    # # This assumes the deploy user has sudo permissions
+    # # This is because migrate needs to touch the storage dir
+    # # Which means we have to su into it
+    # # Which we need to be root to do - but we don't want to be root
+    #
+    # # TODO: Find a way around this
+    # if 'UID' in server_config:
+    #     command = 'sudo -u %s HIREDSCORE_ENVIRONMENT=$HIREDSCORE_ENVIRONMENT %s' % (server_config['UID'], command)
+    #
+    # local(command)
 
 
 @use_root
