@@ -14,7 +14,7 @@ TARGETS = {
         'VENV_LOCATION': '/home/chatsummit/chatsummit/venv',
         'PID_DIR': '/home/chatsummit/chatsummit/storage',
         'GIT_BRANCH' : 'master',
-        'LISTEN_PORT': 80,
+        'LISTEN_PORT': 8811,
         },
     }
 
