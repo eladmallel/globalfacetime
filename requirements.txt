@@ -13,3 +13,4 @@ static==0.4
 wsgiref==0.1.2
 analytics-python==0.4.4
 Fabric==1.6.0
+psutil==1.1.3

@@ -106,7 +106,7 @@ def install(server_config, params):
     # Run a DB migration
     # If using sudo, we have to run our own virtualenv
     if 'VENV_LOCATION' in server_config:
-        command = '%s %s migrate' % (os.path.join(server_config['VENV_LOCATION'], 'bin', 'python'), os.path.join(server_config['BASE_DIR'], 'moriarty', 'manage.py'))
+        command = '%s %s migrate' % (os.path.join(server_config['VENV_LOCATION'], 'bin', 'python'), os.path.join(server_config['BASE_DIR'], 'manage.py'))
     else:
         command = 'python %s migrate' %  os.path.join(server_config['BASE_DIR'], 'moriarty', 'manage.py')
 
