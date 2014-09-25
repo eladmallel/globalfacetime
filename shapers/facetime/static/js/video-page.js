@@ -63,7 +63,8 @@ ChatClient = (function() {
     this.webrtc = new SimpleWebRTC({
         //url: 'http://summitsignal.herokuapp.com:80',
         //url: 'http://10.0.0.13:8888',
-        url: 'http://174.129.2.170:8888',
+        //url: 'http://174.129.2.170:8888',
+        url: 'https://chatsummit.com:444',
         // the id/element dom element that will hold "our" video
         localVideoEl: this.$localContainer[0],
         // the id/element dom element that will hold remote videos
