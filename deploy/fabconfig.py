@@ -50,7 +50,7 @@ def _run_script(directory,filename,func_name,*args,**kwargs):
 
 def _get_daemon_runner(server_config):
     service_name = 'moriarty_'+server_config['NAME']
-    log_directory = os.path.join(server_config['BASE_DIR'],'logs')
+    log_directory = os.path.join(server_config['BASE_DIR'],'..','logs')
     user = server_config.get('GID', None)
     group = server_config.get('GID', None)
     umask = server_config.get('UMASK', None)
