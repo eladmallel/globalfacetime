@@ -193,7 +193,7 @@
             },function() {
                 window.stateMachine.endChat();
                 console.log("Next Chat - cause chat ended");
-                nextChat();
+                history.go(0);
             })
           }
         });
