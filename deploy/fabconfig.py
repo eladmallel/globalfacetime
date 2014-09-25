@@ -49,7 +49,7 @@ def _run_script(directory,filename,func_name,*args,**kwargs):
     # g[func_name](*args, **kwargs)
 
 def _get_daemon_runner(server_config):
-    service_name = 'moriarty_'+server_config['NAME']
+    service_name = 'chatsummit_'+server_config['NAME']
     log_directory = os.path.join(server_config['BASE_DIR'],'..','logs')
     user = server_config.get('GID', None)
     group = server_config.get('GID', None)
@@ -132,7 +132,7 @@ def start(server_config, params):
     @param params a dict of parameters from the command line to be used by the script
     """
     daemons = []
-    daemons.append(DaemonDefinition('chatsummit', _run_script, server_config['BASE_DIR'],
+    daemons.append(DaemonDefinition('webserver', _run_script, server_config['BASE_DIR'],
                                     'manage.py', 'python manage.py runserver 0.0.0.0:%s --noreload'%server_config.get('LISTEN_PORT',80)))
 
     daemon_runner = _get_daemon_runner(server_config)
@@ -146,7 +146,7 @@ def start(server_config, params):
     time.sleep(1)
 
     try:
-        daemon_runner.verify({'chatsummit': 1})
+        daemon_runner.verify({'webserver': 1})
     except DaemonRunnerException,e:
         abort('START VERIFICATION FAILED: %s'%e)
 
@@ -170,7 +170,7 @@ def verify(server_config, params):
     daemon_runner = _get_daemon_runner(server_config)
 
     try:
-        daemon_runner.verify({'chatsummit':1}) # Verify they were started
+        daemon_runner.verify({'webserver':1}) # Verify they were started
     except DaemonRunnerException,e:
         abort('VERIFICATION FAILED: %s'%e)
 
