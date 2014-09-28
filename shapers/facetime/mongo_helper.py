@@ -77,7 +77,7 @@ class ProfilesDao(object):
 
         avatar_url = calculate_gravatar_url(email)
 
-        if geoip_info is None and 'country_name' in geoip_info and len(geoip_info['country_name']) != 0:
+        if geoip_info and 'country_name' in geoip_info and len(geoip_info['country_name']) != 0:
             country_for_match = geoip_info['country_name']
         else:
             country_for_match = country

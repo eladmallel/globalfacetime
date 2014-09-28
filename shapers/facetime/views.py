@@ -141,9 +141,13 @@ def create_profile(request):
         client_ip = get_client_ip(request)
 
         # Get geoip info
-        geoip_info_response = requests.get('http://freegeoip.net/json/%s'%client_ip)
+        geoip_info_response = None
+        try:
+            geoip_info_response = requests.get('http://freegeoip.net/json/%s'%client_ip, timeout=1.0)
+        except:
+            pass
 
-        if geoip_info_response.status_code == 200:
+        if geoip_info_response and geoip_info_response.status_code == 200:
             geoip_info = geoip_info_response.json()
         else:
             # TODO: Log a bad response code somewhere
