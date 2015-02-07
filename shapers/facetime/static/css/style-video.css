@@ -131,12 +131,13 @@
 
 .connect-button {
     width: 112px;
-    height: 32px;
     background-color: #38d37a;
     border-radius: 6px;
     margin-top: 6px;
     font-size: 20px;
     cursor: pointer;
+    text-align:center;
+    padding: 4px;
 }
 
 .next-button {

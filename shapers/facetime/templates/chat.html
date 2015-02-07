@@ -1,257 +1,277 @@
 {% extends 'base.html' %}
 {% block scripts %}
 
-<script type="text/javascript">
-  profile_id = {{profile_id}}
-</script>
+    <script type="text/javascript">
+        profile_id =
+        {{profile_id}}
+    </script>
 
-<!--<script src="http://simplewebrtc.com/latest.js"></script>-->
-<script src="/static/js/simplewebrtc-latest.js"></script>
-<script src="/static/js/jquery.gritter.min.js"></script>
-<script src="/static/js/chat-state.js"></script>
-<script src="/static/js/video-page.js"></script>
+    <!--<script src="http://simplewebrtc.com/latest.js"></script>-->
+    <script src="/static/js/simplewebrtc-latest.js"></script>
+    <script src="/static/js/jquery.gritter.min.js"></script>
+    <script src="/static/js/chat-state.js"></script>
+    <script src="/static/js/video-page.js"></script>
 
-<script>
-     logoNames = [
-        "ChatSummit",
-        "AnyUni",
-        "ChatGo",
-        "Bridg.er",
-        "HubSphere",
-        "ChatMountain",
-        "Club 84",
-     ]
+    <script>
+        logoNames = [
+            "ChatSummit",
+            "AnyUni",
+            "ChatGo",
+            "Bridg.er",
+            "HubSphere",
+            "ChatMountain",
+            "Club 84",
+        ]
 
-     var isChatReady = false;
-     var pendingNext = false;
+        var isChatReady = false;
+        var pendingNext = false;
 
-     function nextChat() {
-        if ( isChatReady )  {
-            pendingNext = false;
-            $(".current-video").addClass('searching-for-partner');
-            window.chatWindow.disconnect();
+        function nextChat() {
+            if (isChatReady) {
+                pendingNext = false;
+                $(".current-video").addClass('searching-for-partner');
+                window.chatWindow.disconnect();
 
-            //window.setTimeout(function() {
+                //window.setTimeout(function() {
                 window.chatWindow.connect();
-            //},5000);
-        } else {
-            pendingNext = true;
-        }
-     }
-
-     function chatReady() {
-         if ( pendingNext ) {
-             isChatReady = true;
-             console.log("Next Chat - cause ready");
-             nextChat();
-         }
-     }
-
-     var END_CHAT_NOTIFY_PERIOD = 1000*60;
-     var showingEndChat = false;
-     var chatEndNotif;
-     var timeLeftInEvent;
-     var timeLeftInChat;
-     var showingLastChat = false;
-     var lastChatNotif;
-     var endPending = false;
-
-     function handleEvent(event,data) {
-        //console.log(event + " " + data);
-
-        if ( event === 'chatStart' ) {
-          window.analytics.track("Chat Started");
-        }
-
-        if ( event === 'chatCancel' ) {
-          window.analytics.track("Chat Canceled");
-          $(".partner-name").text("Waiting for a peer");
-          $(".partner-description").text("Hang on tight...");
-          $('.partner-profile-picture').addClass('default');
-          $('.partner-profile-picture').css('background-image', '');
-        }
-
-        if ( event === 'chatStart' || event === 'chatInProgress') {
-          timeLeftInChat = data;
-        }
-
-        if ( event === 'eventInProgress' || event == 'eventStart' ) {
-          timeLeftInEvent = data;
-        }
-
-        if ( typeof(timeLeftInEvent) !== 'undefined' && typeof(timeLeftInChat) !== 'undefined') {
-          if ( timeLeftInEvent < timeLeftInChat ) {
-            if ( !showingLastChat ) {
-              lastChatNotif = $.gritter.add({title: "Last chat!", text: "This is your last chat before the event ends!", class_name: 'last-chat-notification', sticky: true});
-              showingLastChat = true;
-            }
-          }
-        }
-
-        if ( event === 'eventEnd' ) {
-          timeLeftInEvent = undefined;
-
-          if ( showingLastChat ) {
-            $.gritter.remove(lastChatNotif);
-          }
-          
-          endPending = true; // Will cause event to end once you're done chatting
-        }
-
-        if ( event === 'chatInProgress' ) {
-          var timeLeftSeconds = Math.round(data / 1000);
-          var message = "This chat will end in " + timeLeftSeconds + " seconds";
-          if ( data <= END_CHAT_NOTIFY_PERIOD ) {
-            if ( !showingEndChat ) {
-              chatEndNotif = $.gritter.add({title: "Time's almost up!", text: message, class_name: 'end-chat-notification', sticky: true});
-              showingEndChat = true;
+                //},5000);
             } else {
-              $(".end-chat-notification p").text(message);
+                pendingNext = true;
             }
-          }
         }
 
-        if ( event === 'chatEnd' ) {
-            console.log("ENDD");
-          if ( showingEndChat ) {
-            showingEndChat = false;
-            $.gritter.remove(chatEndNotif);
-          }
-          timeLeftInChat = undefined;
-          window.chatWindow.disconnect();
-          $(".frame-contents").html("Looking for your next chat partner<span id='outof'></span>...");
-          $(".partner-name").text("Waiting for a peer");
-          $(".partner-description").text("Hang on tight...");
-          $('.partner-profile-picture').addClass('default');
-          $('.partner-profile-picture').css('background-image', '');
+        function chatReady() {
+            if (pendingNext) {
+                isChatReady = true;
+                console.log("Next Chat - cause ready");
+                nextChat();
+            }
         }
 
-        if ( event === 'eventEarly' ) {
-          $(".js-pre-chat-container").html('<p>STARTING IN</p><p class="js-starting-in starting-in"></p><p>Keep practicing your smile</p>');
+        var END_CHAT_NOTIFY_PERIOD = 1000 * 60;
+        var showingEndChat = false;
+        var chatEndNotif;
+        var timeLeftInEvent;
+        var timeLeftInChat;
+        var showingLastChat = false;
+        var lastChatNotif;
+        var endPending = false;
+
+        function handleEvent(event, data) {
+            //console.log(event + " " + data);
+
+            if (event === 'chatStart') {
+                window.analytics.track("Chat Started");
+            }
+
+            if (event === 'chatCancel') {
+                window.analytics.track("Chat Canceled");
+                $(".partner-name").text("Waiting for a peer");
+                $(".partner-description").text("Hang on tight...");
+                $('.partner-profile-picture').addClass('default');
+                $('.partner-profile-picture').css('background-image', '');
+            }
+
+            if (event === 'chatStart' || event === 'chatInProgress') {
+                timeLeftInChat = data;
+            }
+
+            if (event === 'eventInProgress' || event == 'eventStart') {
+                timeLeftInEvent = data;
+            }
+
+            if (typeof(timeLeftInEvent) !== 'undefined' && typeof(timeLeftInChat) !== 'undefined') {
+                if (timeLeftInEvent < timeLeftInChat) {
+                    if (!showingLastChat) {
+                        lastChatNotif = $.gritter.add({
+                            title: "Last chat!",
+                            text: "This is your last chat before the event ends!",
+                            class_name: 'last-chat-notification',
+                            sticky: true
+                        });
+                        showingLastChat = true;
+                    }
+                }
+            }
+
+            if (event === 'eventEnd') {
+                timeLeftInEvent = undefined;
+
+                if (showingLastChat) {
+                    $.gritter.remove(lastChatNotif);
+                }
+
+                endPending = true; // Will cause event to end once you're done chatting
+            }
+
+            if (event === 'chatInProgress') {
+                var timeLeftSeconds = Math.round(data / 1000);
+                var message = "This chat will end in " + timeLeftSeconds + " seconds";
+                if (data <= END_CHAT_NOTIFY_PERIOD) {
+                    if (!showingEndChat) {
+                        chatEndNotif = $.gritter.add({
+                            title: "Time's almost up!",
+                            text: message,
+                            class_name: 'end-chat-notification',
+                            sticky: true
+                        });
+                        showingEndChat = true;
+                    } else {
+                        $(".end-chat-notification p").text(message);
+                    }
+                }
+            }
+
+            if (event === 'chatEnd') {
+                console.log("ENDD");
+                if (showingEndChat) {
+                    showingEndChat = false;
+                    $.gritter.remove(chatEndNotif);
+                }
+                timeLeftInChat = undefined;
+                window.chatWindow.disconnect();
+                $(".frame-contents").html("Looking for your next chat partner<span id='outof'></span>...");
+                $(".partner-name").text("Waiting for a peer");
+                $(".partner-description").text("Hang on tight...");
+                $('.partner-profile-picture').addClass('default');
+                $('.partner-profile-picture').css('background-image', '');
+            }
+
+            if (event === 'eventEarly') {
+                $(".js-pre-chat-container").html('<p>STARTING IN</p><p class="js-starting-in starting-in"></p><p>Keep practicing your smile</p>');
+            }
+
+            if (event === 'eventStartIn') {
+                var duration = moment.duration(data, 'milliseconds');
+                $(".js-starting-in").text(duration.minutes() + ":" + duration.seconds());
+            }
+
+            if (event === 'eventStart') {
+                console.log("Next Chat - cause event start");
+                nextChat();
+                $(".js-pre-chat-container").addClass("hidden");
+                $(".js-chat-container").removeClass("hidden");
+                $(".frame-contents").text("Event is a go! Click to start!");
+            }
+
+            if (event === 'eventLate') {
+                console.log("Next Chat - cause event late");
+                nextChat();
+                $(".js-pre-chat-container").addClass("hidden");
+                $(".js-chat-container").removeClass("hidden");
+                $(".frame-contents").html("Looking for your next chat partner<span id='outof'></span>...");
+            }
+
+            if (event === 'eventAlreadyDone') {
+                var duration = moment.duration(data, 'milliseconds');
+                $(".js-pre-chat-container").html("<p>EVENT IS OVER</p><p>It ended " + duration.humanize(true) + "</p>");
+            }
+
+            if (endPending && typeof(timeLeftInChat) === 'undefined') {
+                $(".js-pre-chat-container").removeClass("hidden");
+                $(".js-chat-container").addClass("hidden");
+                var duration = moment.duration(data, 'milliseconds');
+                $(".js-pre-chat-container").html("<p>EVENT IS OVER</p><p>It ended " + duration.humanize(true) + "</p>");
+                endPending = false;
+            }
         }
 
-        if ( event === 'eventStartIn') {
-          var duration = moment.duration(data, 'milliseconds');
-          $(".js-starting-in").text(duration.minutes() + ":" + duration.seconds());
-        }
+        window.stateMachine = new ChatStateMachine(handleEvent);
 
-        if ( event === 'eventStart') {
-          console.log("Next Chat - cause event start");
-          nextChat();
-          $(".js-pre-chat-container").addClass("hidden");
-          $(".js-chat-container").removeClass("hidden");
-          $(".frame-contents").text("Event is a go! Click to start!");
-        }
+        $(function () {
+            window.connectButtonHandler = ConnectButtonHandler($('.js-connect-button'));
 
-        if ( event === 'eventLate') {
-          console.log("Next Chat - cause event late");
-          nextChat();
-          $(".js-pre-chat-container").addClass("hidden");
-          $(".js-chat-container").removeClass("hidden");
-          $(".frame-contents").html("Looking for your next chat partner<span id='outof'></span>...");
-        }
+            $(".current-video").addClass('searching-for-partner');
+            /* Show the searching icon before we start */
 
-        if ( event === 'eventAlreadyDone') {
-          var duration = moment.duration(data, 'milliseconds');
-          $(".js-pre-chat-container").html("<p>EVENT IS OVER</p><p>It ended "+duration.humanize(true)+"</p>");
-        }
+            console.log("Logging in...");
+            $.ajax({
+                method: "GET",
+                dataType: "JSON",
+                url: "/login",
+                data: {
+                    user: GlobalFaceTime.user
+                },
+                success: function (data) {
+                    console.log("Got event info", data.eventInfo);
+                    window.stateMachine.start(data.eventInfo);
 
-        if ( endPending && typeof(timeLeftInChat) === 'undefined') {
-          $(".js-pre-chat-container").removeClass("hidden");
-          $(".js-chat-container").addClass("hidden");
-          var duration = moment.duration(data, 'milliseconds');
-          $(".js-pre-chat-container").html("<p>EVENT IS OVER</p><p>It ended "+duration.humanize(true)+"</p>");
-          endPending = false;
-        }
-     }
-     
-     window.stateMachine = new ChatStateMachine(handleEvent);
+                    GlobalFaceTime.chatClient = new ChatClient(data.token, function () {
+                        window.chatWindow = new ChatWindow(GlobalFaceTime.user, GlobalFaceTime.chatClient, "#myPublisherDivContainer", "#mySubscriberDivContainer");
+                        chatReady();
+                    }, function () {
+                        window.stateMachine.startChat();
+                        $(".current-video").removeClass('searching-for-partner');
+                    }, function () {
+                        window.stateMachine.endChat();
+                        console.log("Next Chat - cause chat ended");
+                        history.go(0);
+                    })
+                }
+            });
 
-     $(function() {
-        window.connectButtonHandler = ConnectButtonHandler($('.js-connect-button'));
+            $("#next-button").click(function () {
+                window.chatWindow.disconnect();
+                window.analytics.track("Chat Skipped");
+            });
 
-        $(".current-video").addClass('searching-for-partner'); /* Show the searching icon before we start */
-
-        console.log("Logging in...");
-        $.ajax({
-         method: "GET",
-         dataType: "JSON",
-         url: "/login",
-         data: {
-            user:GlobalFaceTime.user
-          },
-          success: function(data) {
-            console.log("Got event info",data.eventInfo);
-            window.stateMachine.start(data.eventInfo);
-
-            GlobalFaceTime.chatClient = new ChatClient(data.token,function() {
-                window.chatWindow = new ChatWindow(GlobalFaceTime.user,GlobalFaceTime.chatClient,"#myPublisherDivContainer","#mySubscriberDivContainer");
-                chatReady();
-            },function() {
-                window.stateMachine.startChat();
-                $(".current-video").removeClass('searching-for-partner');
-            },function() {
-                window.stateMachine.endChat();
-                console.log("Next Chat - cause chat ended");
-                history.go(0);
-            })
-          }
+            var chosenLogo = logoNames[Math.floor(Math.random() * logoNames.length)];
+            $("#logo-text").text(chosenLogo);
         });
+    </script>
 
-        $("#next-button").click(function() {
-           window.chatWindow.disconnect();
-           window.analytics.track("Chat Skipped");
-        });
-
-        var chosenLogo = logoNames[Math.floor(Math.random() * logoNames.length)];   
-        $("#logo-text").text(chosenLogo);        
-     });
-     </script>
-
-     <link href="/static/css/style-video.css" rel="stylesheet" type="text/css">
+    <link href="/static/css/style-video.css" rel="stylesheet" type="text/css">
 {% endblock %}
 {% block content %}
-<div class="chat-container js-chat-container hidden">
-  <div class="videos-section clearfix">
-      <div class="current-video">
-          <div class="video-frame video-main">
-              <div class='spinner-container'>
-                <div class='vertical-align-hack'></div>
-                <div class='frame-contents' style='display: inline-block; text-align: center; vertical-align: middle'></div>
-                <img class="loading-spinner spinner" src="/static/images/big_loader.gif">
-                <img class="loading-spinner search" src="/static/images/search.png">
-              </div>
-              <div id="mySubscriberDivContainer"></div>
+    <div class="chat-container js-chat-container hidden">
+        <div class="videos-section clearfix">
+            <div class="current-video">
+                <div class="video-frame video-main">
+                    <div class='spinner-container'>
+                        <div class='vertical-align-hack'></div>
+                        <div class='frame-contents'
+                             style='display: inline-block; text-align: center; vertical-align: middle'></div>
+                        <img class="loading-spinner spinner" src="/static/images/big_loader.gif">
+                        <img class="loading-spinner search" src="/static/images/search.png">
+                    </div>
+                    <div id="mySubscriberDivContainer"></div>
 
-              <div class="video-frame video-secondary">
-                  <div class='spinner-container'>
-                    <div class='vertical-align-hack'></div>
-                    <img class="loading-spinner" src="/static/images/big_loader.gif">
-                  </div>
-                  <div id="myPublisherDivContainer"></div>
-              </div>
-          </div>
-      </div>
+                    <div class="video-frame video-secondary">
+                        <div class='spinner-container'>
+                            <div class='vertical-align-hack'></div>
+                            <img class="loading-spinner" src="/static/images/big_loader.gif">
+                        </div>
+                        <div id="myPublisherDivContainer"></div>
+                    </div>
+                </div>
+            </div>
 
-      <div class="next-video">
-          <div class="video-frame video-next">
-          </div>
-      </div>
-  </div>
+            <div class="next-video">
+                <div class="video-frame video-next">
+                </div>
+            </div>
+        </div>
 
-  <div class="chat-information">
-      <div class="connect-section">
-        <div class="partner-profile-picture"></div>
-        <div class="connect-button js-connect-button"><div class='connect-plus'></div>connect</div>  
-      </div>
-      <div class="next-button" id="next-button"><div class='next-arrows'></div><div class='next-text'>NEXT</div></div>
-      <div class="partner-information">
-          <h4 class="partner-name">Waiting for a peer</h4>
-          <p class="partner-description">Hang on tight...</p>
-      </div>
-  </div>
-</div>
-<div class="pre-chat-container js-pre-chat-container" style="width: 200px; margin: 0 auto;">
-  <p>Get Ready...</p>
-</div>
+        <div class="chat-information">
+            <div class="connect-section">
+                <div class="partner-profile-picture"></div>
+                <div class="connect-button js-connect-button">
+                    <div class='connect-plus'></div>
+                    Exchange emails
+                </div>
+            </div>
+            <div class="next-button" id="next-button">
+                <div class='next-arrows'></div>
+                <div class='next-text'>NEXT</div>
+            </div>
+            <div class="partner-information">
+                <h4 class="partner-name">Waiting for a peer</h4>
+
+                <p class="partner-description">Hang on tight...</p>
+            </div>
+        </div>
+    </div>
+    <div class="pre-chat-container js-pre-chat-container" style="width: 200px; margin: 0 auto;">
+        <p>Get Ready...</p>
+    </div>
 {% endblock %}
